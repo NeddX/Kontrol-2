@@ -100,8 +100,8 @@ namespace Kontrol_2_Client
 		private static FilterInfoCollection videoDevices;
 		private static VideoCaptureDevice videoSource;
 		private static Encoding uniEncoder = Encoding.Unicode;
-		//private static WasapiLoopbackCapture audioSource;
-		private static WaveInEvent audioSource;
+		private static WasapiLoopbackCapture internalSource = null;
+		private static WaveInEvent audioSource = null;
 		static void Main(string[] args)
 		{
 			Connect();
@@ -117,7 +117,7 @@ namespace Kontrol_2_Client
 				try
 				{
 					attempts++;
-					Console.WriteLine("Connection attempt {0}", attempts);
+					Console.Write("\rConnection attempt {0}", attempts);
 					_clientSocket.Connect(IPAddress.Parse("192.168.1.6"), PORT);
 				}
 				catch (SocketException)
@@ -653,8 +653,16 @@ namespace Kontrol_2_Client
 							Audio_Stream(int.Parse(args[0]));
 							break;
 						case "end_stream":
-							audioSource.DataAvailable -= new EventHandler<WaveInEventArgs>(audioSource_NewAudio);
-							audioSource.StopRecording();
+							if (internalSource == null)
+							{
+								audioSource.DataAvailable -= audioSource_NewAudio;
+								audioSource.StopRecording();
+							}
+							else
+							{
+								internalSource.DataAvailable -= audioSource_NewAudio;
+								internalSource.StopRecording();
+							}
 							break;
 					}
 				}
@@ -887,22 +895,36 @@ namespace Kontrol_2_Client
 		}
 		private static void Audio_Stream(int deviceId = 0)
 		{
-			audioSource = new WaveInEvent();
-			audioSource.DeviceNumber = deviceId;
-			audioSource.WaveFormat = new WaveFormat(44100, NAudio.Wave.WaveIn.GetCapabilities(deviceId).Channels); 
-			audioSource.DataAvailable += new EventHandler<WaveInEventArgs>(audioSource_NewAudio);
-			audioSource.RecordingStopped += (s, a) =>
+			if (deviceId == -5)
 			{
-				audioSource.Dispose();
-				audioSource = null;
-			};
-			audioSource.StartRecording(); 
+				internalSource = new WasapiLoopbackCapture();
+				internalSource.DataAvailable += audioSource_NewAudio;
+				internalSource.RecordingStopped += (s, a) =>
+				{
+					internalSource.Dispose();
+					internalSource = null;
+				};
+				internalSource.StartRecording();
+			}
+			else
+			{
+				audioSource = new WaveInEvent();
+				audioSource.DeviceNumber = deviceId;
+				audioSource.WaveFormat = new WaveFormat(44100, 16, WaveIn.GetCapabilities(deviceId).Channels); 
+				audioSource.DataAvailable += audioSource_NewAudio;
+				audioSource.RecordingStopped += (s, a) =>
+				{
+					audioSource.Dispose();
+					audioSource = null;
+				};
+				audioSource.StartRecording(); 
+			}
 		}
 		private static void audioSource_NewAudio(object sender, WaveInEventArgs e)
 		{
 			byte[] header = uniEncoder.GetBytes("servmod^austream");
 			byte[] audioBytes = e.Buffer;
-			byte[] data = new byte[audioBytes.Length + 32];
+			byte[] data = new byte[e.BytesRecorded + 32];
 
 			Buffer.BlockCopy(header, 0, data, 0, header.Length);
 			Buffer.BlockCopy(audioBytes, 0, data, header.Length, audioBytes.Length);

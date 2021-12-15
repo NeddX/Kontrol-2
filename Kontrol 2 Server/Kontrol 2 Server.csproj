@@ -8,6 +8,7 @@
     <Platforms>AnyCPU;x64</Platforms>
 	<RestoreFallbackFolders>clear</RestoreFallbackFolders>
 	<PlatformTarget>x64</PlatformTarget>
+    <RestoreFallbackFolders>clear</RestoreFallbackFolders>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <PackageReference Include="FFmpeg.AutoGen" Version="4.4.1.1" />
     <PackageReference Include="FFmpeg.Nightly" Version="20200831.1.0" />
     <PackageReference Include="NAudio" Version="2.0.1" />
+    <PackageReference Include="NAudio.Lame" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
@@ -35,6 +37,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Windows.Forms\v4.0_4.0.0.0__b77a5c561934e089\System.Windows.Forms.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

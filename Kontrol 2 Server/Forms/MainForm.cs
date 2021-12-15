@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Runtime;
 
 namespace Kontrol_2_Server
+
 {
 	public partial class MainForm : Form
 	{

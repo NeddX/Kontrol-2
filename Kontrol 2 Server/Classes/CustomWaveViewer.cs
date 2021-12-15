@@ -11,7 +11,7 @@ namespace Kontrol_2_Server
     /// <summary>
     /// Control for viewing waveforms
     /// </summary>
-    public class CustomWaveViewer : System.Windows.Forms.UserControl
+    public partial class CustomWaveViewer : System.Windows.Forms.UserControl
     {
         public Color PenColor { get; set; }
         public float PenWidth { get; set; }
