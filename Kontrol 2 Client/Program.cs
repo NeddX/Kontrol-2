@@ -153,7 +153,6 @@ namespace Kontrol_2_Client
 					}
 					if (audioSource != null)
 					{
-						audioSource.DataAvailable -= new EventHandler<WaveInEventArgs>(audioSource_NewAudio);
 						audioSource.StopRecording(); 
 					}
 					Connect();
@@ -636,14 +635,13 @@ namespace Kontrol_2_Client
 					{
 						case "audio_devices":
 							string devices = "";
-							int waveInDevices = WaveIn.DeviceCount;
-							for (int i = 0; i < waveInDevices; i++)
+							var mmdevices = new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+							for (int i = 0; i < mmdevices.Count; i++)
 							{
-								WaveInCapabilities device = WaveIn.GetCapabilities(i);
-								if (i == waveInDevices - 1)
-									devices += device.ProductName;
+								if (i == mmdevices.Count - 1)
+									devices += mmdevices[i].FriendlyName;
 								else
-									devices += device.ProductName + "&";
+									devices += mmdevices[i].FriendlyName + "&";
 							}
 							Send("remote_audio\naudio_devices\n" + devices);
 							break;
@@ -655,12 +653,12 @@ namespace Kontrol_2_Client
 						case "end_stream":
 							if (internalSource == null)
 							{
-								audioSource.DataAvailable -= audioSource_NewAudio;
+								//audioSource.DataAvailable -= audioSource_NewAudio;
 								audioSource.StopRecording();
 							}
 							else
 							{
-								internalSource.DataAvailable -= audioSource_NewAudio;
+								//internalSource.DataAvailable -= audioSource_NewAudio;
 								internalSource.StopRecording();
 							}
 							break;
@@ -895,9 +893,10 @@ namespace Kontrol_2_Client
 		}
 		private static void Audio_Stream(int deviceId = 0)
 		{
-			if (deviceId == -5)
+			if (true)
 			{
-				internalSource = new WasapiLoopbackCapture();
+				var mmdevices = new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+				internalSource = new WasapiLoopbackCapture(mmdevices[deviceId]);
 				internalSource.DataAvailable += audioSource_NewAudio;
 				internalSource.RecordingStopped += (s, a) =>
 				{
@@ -905,6 +904,7 @@ namespace Kontrol_2_Client
 					internalSource = null;
 				};
 				internalSource.StartRecording();
+				Console.WriteLine("recording started");
 			}
 			else
 			{
@@ -930,6 +930,7 @@ namespace Kontrol_2_Client
 			Buffer.BlockCopy(audioBytes, 0, data, header.Length, audioBytes.Length);
 
 			_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
+			Console.Write("#");
 		}
 		public static void DownloadFile(string path, byte[] data)
 		{

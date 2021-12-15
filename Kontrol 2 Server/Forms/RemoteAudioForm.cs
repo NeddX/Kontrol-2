@@ -45,7 +45,7 @@ namespace Kontrol_2_Server
 		public void processAudio(byte[] audioBytes)
 		{
 			MemoryStream ms = new MemoryStream(audioBytes);
-			//stream.BufferPlay(audioBytes);
+			stream.BufferPlay(audioBytes);
 			waveViewer.WaveStream = new RawSourceWaveStream(ms, new WaveFormat());
 			if (recPath != null)
 			{
@@ -66,7 +66,6 @@ namespace Kontrol_2_Server
 						devicesCombo.Items.Add(device);
 					}
 					devicesCombo.SelectedIndex = 0;
-					devicesCombo.Items.Add("Internal Audio");
 				}));
 			}
 			else
@@ -77,7 +76,6 @@ namespace Kontrol_2_Server
 					devicesCombo.Items.Add(device);
 				}
 				devicesCombo.SelectedIndex = 0;
-				devicesCombo.Items.Add("Internal Audio");
 			}
 		}
 
