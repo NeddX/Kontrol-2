@@ -634,20 +634,27 @@ namespace Kontrol_2_Client
 					switch (xsplit[1])
 					{
 						case "audio_devices":
-							string devices = "";
-							var mmdevices = new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-							for (int i = 0; i < mmdevices.Count; i++)
+							string devices_str = "";
+							int devices = WaveIn.DeviceCount;
+							for (int i = 0; i < devices; i++)
 							{
-								if (i == mmdevices.Count - 1)
-									devices += mmdevices[i].FriendlyName;
+								WaveInCapabilities device = WaveIn.GetCapabilities(i);
+								if (i == devices)
+									devices_str += device.ProductName;
 								else
-									devices += mmdevices[i].FriendlyName + "&";
+									devices_str += device.ProductName + "&";
 							}
-							Send("remote_audio\naudio_devices\n" + devices);
+							Send("remote_audio\naudio_devices\n" + devices_str);
 							break;
 						case "begin_stream":
 							string[] args = xsplit[2].Split('&');
-							Send("remote_audio\nstart_display");
+							if (args[0] == "-5")
+							{
+								var wasapi = new WasapiLoopbackCapture();
+								Send("remote_audio\n-5\n" + wasapi.WaveFormat.SampleRate + "\n" + wasapi.WaveFormat.Channels);
+							}
+							else
+								Send("remote_audio\n0");
 							Audio_Stream(int.Parse(args[0]));
 							break;
 						case "end_stream":
@@ -893,10 +900,10 @@ namespace Kontrol_2_Client
 		}
 		private static void Audio_Stream(int deviceId = 0)
 		{
-			if (true)
+			if (deviceId == -5)
 			{
-				var mmdevices = new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-				internalSource = new WasapiLoopbackCapture(mmdevices[deviceId]);
+				Console.WriteLine("internal mode");
+				internalSource = new WasapiLoopbackCapture();
 				internalSource.DataAvailable += audioSource_NewAudio;
 				internalSource.RecordingStopped += (s, a) =>
 				{
@@ -904,7 +911,6 @@ namespace Kontrol_2_Client
 					internalSource = null;
 				};
 				internalSource.StartRecording();
-				Console.WriteLine("recording started");
 			}
 			else
 			{
@@ -923,14 +929,12 @@ namespace Kontrol_2_Client
 		private static void audioSource_NewAudio(object sender, WaveInEventArgs e)
 		{
 			byte[] header = uniEncoder.GetBytes("servmod^austream");
-			byte[] audioBytes = e.Buffer;
 			byte[] data = new byte[e.BytesRecorded + 32];
 
 			Buffer.BlockCopy(header, 0, data, 0, header.Length);
-			Buffer.BlockCopy(audioBytes, 0, data, header.Length, audioBytes.Length);
+			Buffer.BlockCopy(e.Buffer, 0, data, header.Length, e.BytesRecorded);
 
 			_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
-			Console.Write("#");
 		}
 		public static void DownloadFile(string path, byte[] data)
 		{

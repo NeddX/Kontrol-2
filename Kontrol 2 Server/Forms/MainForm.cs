@@ -225,10 +225,6 @@ namespace Kontrol_2_Server
 					{
 						byte[] audioBytes = new byte[recBuf.Length - 32];
 						Buffer.BlockCopy(recBuf, 32, audioBytes, 0, audioBytes.Length);
-						/*using (FileStream fs = new FileStream(@".\mafile.txt", FileMode.OpenOrCreate, FileAccess.Write))
-						{
-							fs.Write(audioBytes, 0, audioBytes.Length);
-						}*/
 						raf.processAudio(audioBytes);
 					}
 				}
@@ -371,15 +367,18 @@ namespace Kontrol_2_Server
 							case "audio_devices":
 								raf.listDevices(xsplit[2]);
 								break;
-							case "qualities":
-								rcf.listResolutions(xsplit[2]);
+							case "-5":
+								raf.initialize("-5", int.Parse(xsplit[2]), int.Parse(xsplit[3]));
 								break;
-							case "start_recording":
+							case "0":
+								raf.initialize("0");
+								break;
+							/*case "start_recording":
 								raf.auStream = true;
 								break;
 							case "stop_recording":
 								raf.auStream = false;
-								break;
+								break;*/
 						}
 					}
 					else if (!string.IsNullOrEmpty(resp))

@@ -19,11 +19,10 @@ namespace Kontrol_2_Server
 	public partial class RemoteAudioForm : Form
 	{
 		public int clientId = 0;
-		public bool auStream = false;
 		private string recPath = null;
 		private AudioStream stream = new AudioStream();
-		WaveFormat waveFormat = new WaveFormat(8000, 8, 2);
 		private MemoryStream recStream = new MemoryStream();
+		private WaveFormat waveFormat = new WaveFormat();
 		public RemoteAudioForm()
 		{
 			InitializeComponent();
@@ -31,26 +30,43 @@ namespace Kontrol_2_Server
 
 		private void RemoteAudioForm_Load(object sender, EventArgs e)
 		{
-			stream.Init();
 			new MainForm().SendCommand("remote_audio\naudio_devices", clientId);
 		}
 
 		private void RemoteAudioForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			MainForm.raf = new RemoteAudioForm();
-			if (auStream)
+			if (startButton.Text == "Stop")
 				new MainForm().SendCommand("remote_audio\nend_stream", clientId);
 		}
 
+		public void initialize(string type, int sampleRate = 48000, int channels = 2)
+		{
+			if (type == "-5")
+			{
+				waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channels);
+				stream.Init(waveFormat);
+			}
+			else
+			{
+				waveFormat = new WaveFormat();
+				stream.Init(waveFormat);
+			}
+		}
+		
 		public void processAudio(byte[] audioBytes)
 		{
-			MemoryStream ms = new MemoryStream(audioBytes);
-			stream.BufferPlay(audioBytes);
-			waveViewer.WaveStream = new RawSourceWaveStream(ms, new WaveFormat());
-			if (recPath != null)
+			try
 			{
-				recStream.Write(audioBytes, 0, audioBytes.Length);
+				MemoryStream ms = new MemoryStream(audioBytes);
+				stream.BufferPlay(audioBytes);
+				waveViewer.WaveStream = new RawSourceWaveStream(ms, waveFormat);
+				if (recPath != null)
+				{
+					recStream.Write(audioBytes, 0, audioBytes.Length);
+				}
 			}
+			catch { }
 		}
 
 		public void listDevices(string devices)
@@ -63,9 +79,13 @@ namespace Kontrol_2_Server
 					devicesCombo.Items.Clear();
 					foreach (string device in xsplit)
 					{
-						devicesCombo.Items.Add(device);
+						if (!string.IsNullOrEmpty(device))
+						{
+							devicesCombo.Items.Add(device);
+						}
 					}
-					devicesCombo.SelectedIndex = 0;
+					devicesCombo.SelectedIndex = 0; 
+					devicesCombo.Items.Add("Internal Audio");
 				}));
 			}
 			else
@@ -73,9 +93,13 @@ namespace Kontrol_2_Server
 				devicesCombo.Items.Clear();
 				foreach (string device in xsplit)
 				{
-					devicesCombo.Items.Add(device);
+					if (!string.IsNullOrEmpty(device))
+					{
+						devicesCombo.Items.Add(device);
+					}
 				}
 				devicesCombo.SelectedIndex = 0;
+				devicesCombo.Items.Add("Internal Audio");
 			}
 		}
 
@@ -84,13 +108,17 @@ namespace Kontrol_2_Server
 			if (startButton.Text.ToLower() == "start")
 			{
 				if (devicesCombo.GetItemText(devicesCombo.SelectedItem) == "Internal Audio")
+				{
 					new MainForm().SendCommand("remote_audio\nbegin_stream\n-5", clientId);
+				}
 				else
+				{
 					new MainForm().SendCommand("remote_audio\nbegin_stream\n" + devicesCombo.SelectedIndex, clientId);
+				}
 				qualityCombo.Enabled = false;
 				devicesCombo.Enabled = false;
 				startButton.Text = "Stop";
-				auStream = true;
+				//auStream = true;
 				//WaveRenderer.Start();
 			}
 			else
@@ -99,7 +127,7 @@ namespace Kontrol_2_Server
 				qualityCombo.Enabled = true;
 				devicesCombo.Enabled = true;
 				startButton.Text = "Start";
-				auStream = false;
+				//auStream = false;
 				//WaveRenderer.Stop();
 			}
 		}
@@ -123,7 +151,7 @@ namespace Kontrol_2_Server
 			else
 			{
 				recStream.Position = 0;
-				var waveStream = new RawSourceWaveStream(recStream, new WaveFormat()); 
+				var waveStream = new RawSourceWaveStream(recStream, waveFormat); 
 				WaveFileWriter.CreateWaveFile(recPath, waveStream);
 				recStream.Dispose();
 				recStream.Close();

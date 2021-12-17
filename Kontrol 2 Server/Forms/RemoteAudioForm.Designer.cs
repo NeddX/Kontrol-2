@@ -109,7 +109,7 @@
 			this.waveViewer.Location = new System.Drawing.Point(-2, 32);
 			this.waveViewer.Name = "waveViewer";
 			this.waveViewer.PenColor = System.Drawing.Color.Crimson;
-			this.waveViewer.PenWidth = 3F;
+			this.waveViewer.PenWidth = 1F;
 			this.waveViewer.SamplesPerPixel = 128;
 			this.waveViewer.Size = new System.Drawing.Size(516, 246);
 			this.waveViewer.StartPosition = ((long)(0));

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NAudio;
+﻿using NAudio.Wave;
 
 namespace Kontrol_2_Server
 {
@@ -21,9 +16,9 @@ namespace Kontrol_2_Server
         /// <summary>
         /// Init audio stream playing
         /// </summary>
-        public void Init()
+        public void Init(WaveFormat waveFormat)
         {
-            provider = new NAudio.Wave.BufferedWaveProvider(new NAudio.Wave.WaveFormat()); //Setup the provider
+            provider = new NAudio.Wave.BufferedWaveProvider(waveFormat); //Setup the provider
             waveOut = new NAudio.Wave.WaveOut(); //Setup the player
             waveOut.Init(provider); //Bind the player to the provider
             waveOut.Play(); //Start playing incoming data with the player
