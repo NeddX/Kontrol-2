@@ -32,6 +32,11 @@ namespace Kontrol_2_Server
 		{
 			new MainForm().SendCommand("remote_audio\naudio_devices", clientId);
 		}
+		
+		private void RemoteAudioForm_FormShown(object sender, EventArgs e)
+		{
+			waveViewer.FitToScreen(); //useless doesnt work. dont forget to remove this
+		}
 
 		private void RemoteAudioForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
@@ -60,7 +65,8 @@ namespace Kontrol_2_Server
 			{
 				MemoryStream ms = new MemoryStream(audioBytes);
 				stream.BufferPlay(audioBytes);
-				waveViewer.WaveStream = new RawSourceWaveStream(ms, waveFormat);
+				waveViewer.WaveStream = new RawSourceWaveStream(ms, new WaveFormat());
+				waveViewer.FitToScreen();
 				if (recPath != null)
 				{
 					recStream.Write(audioBytes, 0, audioBytes.Length);

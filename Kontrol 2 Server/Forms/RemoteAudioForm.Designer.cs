@@ -127,6 +127,7 @@
 			this.Text = "RemoteAudioForm";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RemoteAudioForm_FormClosing);
 			this.Load += new System.EventHandler(this.RemoteAudioForm_Load);
+			this.Shown += new System.EventHandler(this.RemoteAudioForm_FormShown);
 			this.panel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 

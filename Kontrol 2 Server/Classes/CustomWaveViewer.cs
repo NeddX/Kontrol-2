@@ -180,36 +180,39 @@ namespace Kontrol_2_Server
         /// </summary>
         protected override void OnPaint(PaintEventArgs e)
         {
-            if (waveStream != null)
+            try
             {
-                waveStream.Position = 0;
-                int bytesRead;
-                byte[] waveData = new byte[samplesPerPixel * bytesPerSample];
-                waveStream.Position = startPosition + (e.ClipRectangle.Left * bytesPerSample * samplesPerPixel);
-
-                using (Pen linePen = new Pen(PenColor, PenWidth))
+                if (waveStream != null)
                 {
-                    for (float x = e.ClipRectangle.X; x < e.ClipRectangle.Right; x += 1)
+                    waveStream.Position = 0;
+                    int bytesRead;
+                    byte[] waveData = new byte[samplesPerPixel * bytesPerSample];
+                    waveStream.Position = startPosition + (e.ClipRectangle.Left * bytesPerSample * samplesPerPixel);
+
+                    using (Pen linePen = new Pen(PenColor, PenWidth))
                     {
-                        short low = 0;
-                        short high = 0;
-                        bytesRead = waveStream.Read(waveData, 0, samplesPerPixel * bytesPerSample);
-                        if (bytesRead == 0)
-                            break;
-                        for (int n = 0; n < bytesRead; n += 2)
+                        for (float x = e.ClipRectangle.X; x < e.ClipRectangle.Right; x += 1)
                         {
-                            short sample = BitConverter.ToInt16(waveData, n);
-                            if (sample < low) low = sample;
-                            if (sample > high) high = sample;
+                            short low = 0;
+                            short high = 0;
+                            bytesRead = waveStream.Read(waveData, 0, samplesPerPixel * bytesPerSample);
+                            if (bytesRead == 0)
+                                break;
+                            for (int n = 0; n < bytesRead; n += 2)
+                            {
+                                short sample = BitConverter.ToInt16(waveData, n);
+                                if (sample < low) low = sample;
+                                if (sample > high) high = sample;
+                            }
+                            float lowPercent = ((((float)low) - short.MinValue) / ushort.MaxValue);
+                            float highPercent = ((((float)high) - short.MinValue) / ushort.MaxValue);
+                            e.Graphics.DrawLine(linePen, x, this.Height * lowPercent, x, this.Height * highPercent);
                         }
-                        float lowPercent = ((((float)low) - short.MinValue) / ushort.MaxValue);
-                        float highPercent = ((((float)high) - short.MinValue) / ushort.MaxValue);
-                        e.Graphics.DrawLine(linePen, x, this.Height * lowPercent, x, this.Height * highPercent);
                     }
                 }
+                base.OnPaint(e);
             }
-
-            base.OnPaint(e);
+            catch { }
         }
 
 
