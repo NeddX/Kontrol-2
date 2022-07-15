@@ -24,8 +24,8 @@ namespace Kontrol_2_Server
 		#region Windows Form Designer generated code
 
 		/// <summary>
-		///  Required method for Designer support - do not modify
-		///  the contents of this method with the code editor.
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
 		{
@@ -60,9 +60,18 @@ namespace Kontrol_2_Server
 			this.remoteAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.miscToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.remoteShellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.manageClientToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+			this.shutdownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.sleepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.uninstallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.showLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.advancedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.sendCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.iconsList = new System.Windows.Forms.ImageList(this.components);
 			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this.listView1 = new System.Windows.Forms.ListView();
+			this.tabPage3 = new System.Windows.Forms.TabPage();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusSentLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -72,11 +81,20 @@ namespace Kontrol_2_Server
 			this.listUpdate = new System.Windows.Forms.Timer(this.components);
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.statusUpdate = new System.Windows.Forms.Timer(this.components);
+			this.systemTray = new System.Windows.Forms.NotifyIcon(this.components);
+			this.notifyStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.compileCScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.keyloggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.visitWebsiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.chatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.changeWallpaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.mainTab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.listViewStrip.SuspendLayout();
-			this.tabPage2.SuspendLayout();
 			this.statusStrip1.SuspendLayout();
+			this.notifyStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// mainTab
@@ -86,19 +104,22 @@ namespace Kontrol_2_Server
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.mainTab.Controls.Add(this.tabPage1);
 			this.mainTab.Controls.Add(this.tabPage2);
+			this.mainTab.Controls.Add(this.tabPage3);
 			this.mainTab.Location = new System.Drawing.Point(12, 12);
+			this.mainTab.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.mainTab.Name = "mainTab";
 			this.mainTab.SelectedIndex = 0;
-			this.mainTab.Size = new System.Drawing.Size(1301, 281);
+			this.mainTab.Size = new System.Drawing.Size(1301, 282);
 			this.mainTab.TabIndex = 2;
 			// 
 			// tabPage1
 			// 
 			this.tabPage1.Controls.Add(this.ClientsView);
 			this.tabPage1.Location = new System.Drawing.Point(4, 24);
+			this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(1293, 253);
+			this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			this.tabPage1.Size = new System.Drawing.Size(1293, 254);
 			this.tabPage1.TabIndex = 0;
 			this.tabPage1.Text = "Clients";
 			this.tabPage1.UseVisualStyleBackColor = true;
@@ -123,9 +144,10 @@ namespace Kontrol_2_Server
 			this.ClientsView.FullRowSelect = true;
 			this.ClientsView.LabelEdit = true;
 			this.ClientsView.LargeImageList = this.iconsList;
-			this.ClientsView.Location = new System.Drawing.Point(3, 3);
+			this.ClientsView.Location = new System.Drawing.Point(4, 3);
+			this.ClientsView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.ClientsView.Name = "ClientsView";
-			this.ClientsView.Size = new System.Drawing.Size(1287, 247);
+			this.ClientsView.Size = new System.Drawing.Size(1285, 248);
 			this.ClientsView.SmallImageList = this.iconsList;
 			this.ClientsView.TabIndex = 0;
 			this.ClientsView.UseCompatibleStateImageBehavior = false;
@@ -193,9 +215,11 @@ namespace Kontrol_2_Server
 			this.listViewStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.funMenuToolStripMenuItem,
             this.monitoringToolStripMenuItem,
-            this.miscToolStripMenuItem});
+            this.miscToolStripMenuItem,
+            this.manageClientToolStripMenuItem,
+            this.advancedToolStripMenuItem});
 			this.listViewStrip.Name = "listViewStrip";
-			this.listViewStrip.Size = new System.Drawing.Size(181, 92);
+			this.listViewStrip.Size = new System.Drawing.Size(181, 136);
 			// 
 			// funMenuToolStripMenuItem
 			// 
@@ -204,7 +228,10 @@ namespace Kontrol_2_Server
             this.playSystemSoundToolStripMenuItem,
             this.microsoftTextToSpeechToolStripMenuItem,
             this.playSinewaveFrequencyToolStripMenuItem,
-            this.hideWindowsElementsToolStripMenuItem});
+            this.hideWindowsElementsToolStripMenuItem,
+            this.visitWebsiteToolStripMenuItem,
+            this.chatToolStripMenuItem,
+            this.changeWallpaperToolStripMenuItem});
 			this.funMenuToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_14;
 			this.funMenuToolStripMenuItem.Name = "funMenuToolStripMenuItem";
 			this.funMenuToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
@@ -257,7 +284,8 @@ namespace Kontrol_2_Server
             this.fileManagerToolStripMenuItem,
             this.remoteDesktopToolStripMenuItem,
             this.remoteWebcamToolStripMenuItem,
-            this.remoteAudioToolStripMenuItem});
+            this.remoteAudioToolStripMenuItem,
+            this.keyloggerToolStripMenuItem});
 			this.monitoringToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.shell32_22;
 			this.monitoringToolStripMenuItem.Name = "monitoringToolStripMenuItem";
 			this.monitoringToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
@@ -285,6 +313,7 @@ namespace Kontrol_2_Server
 			this.remoteDesktopToolStripMenuItem.Name = "remoteDesktopToolStripMenuItem";
 			this.remoteDesktopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.remoteDesktopToolStripMenuItem.Text = "Remote Desktop";
+			this.remoteDesktopToolStripMenuItem.Click += new System.EventHandler(this.remoteDesktopToolStripMenuItem_Click);
 			// 
 			// remoteWebcamToolStripMenuItem
 			// 
@@ -319,6 +348,85 @@ namespace Kontrol_2_Server
 			this.remoteShellToolStripMenuItem.Text = "Remote Shell";
 			this.remoteShellToolStripMenuItem.Click += new System.EventHandler(this.remoteShellToolStripMenuItem_Click);
 			// 
+			// manageClientToolStripMenuItem
+			// 
+			this.manageClientToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exitToolStripMenuItem1,
+            this.shutdownToolStripMenuItem,
+            this.sleepToolStripMenuItem,
+            this.restartToolStripMenuItem,
+            this.uninstallToolStripMenuItem,
+            this.showLocationToolStripMenuItem});
+			this.manageClientToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.shell32_16826;
+			this.manageClientToolStripMenuItem.Name = "manageClientToolStripMenuItem";
+			this.manageClientToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.manageClientToolStripMenuItem.Text = "Manage Client";
+			// 
+			// exitToolStripMenuItem1
+			// 
+			this.exitToolStripMenuItem1.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1027;
+			this.exitToolStripMenuItem1.Name = "exitToolStripMenuItem1";
+			this.exitToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem1.Text = "Exit";
+			this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem1_Click);
+			// 
+			// shutdownToolStripMenuItem
+			// 
+			this.shutdownToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1008;
+			this.shutdownToolStripMenuItem.Name = "shutdownToolStripMenuItem";
+			this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.shutdownToolStripMenuItem.Text = "Shutdown";
+			this.shutdownToolStripMenuItem.Click += new System.EventHandler(this.shutdownToolStripMenuItem_Click);
+			// 
+			// sleepToolStripMenuItem
+			// 
+			this.sleepToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10081;
+			this.sleepToolStripMenuItem.Name = "sleepToolStripMenuItem";
+			this.sleepToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.sleepToolStripMenuItem.Text = "Sleep";
+			this.sleepToolStripMenuItem.Click += new System.EventHandler(this.sleepToolStripMenuItem_Click);
+			// 
+			// restartToolStripMenuItem
+			// 
+			this.restartToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5311;
+			this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
+			this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.restartToolStripMenuItem.Text = "Restart";
+			this.restartToolStripMenuItem.Click += new System.EventHandler(this.restartToolStripMenuItem_Click);
+			// 
+			// uninstallToolStripMenuItem
+			// 
+			this.uninstallToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_54;
+			this.uninstallToolStripMenuItem.Name = "uninstallToolStripMenuItem";
+			this.uninstallToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.uninstallToolStripMenuItem.Text = "Uninstall";
+			this.uninstallToolStripMenuItem.Click += new System.EventHandler(this.uninstallToolStripMenuItem_Click);
+			// 
+			// showLocationToolStripMenuItem
+			// 
+			this.showLocationToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_18;
+			this.showLocationToolStripMenuItem.Name = "showLocationToolStripMenuItem";
+			this.showLocationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.showLocationToolStripMenuItem.Text = "Show Location";
+			this.showLocationToolStripMenuItem.Click += new System.EventHandler(this.showLocationToolStripMenuItem_Click);
+			// 
+			// advancedToolStripMenuItem
+			// 
+			this.advancedToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sendCommandToolStripMenuItem,
+            this.compileCScriptToolStripMenuItem});
+			this.advancedToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_34;
+			this.advancedToolStripMenuItem.Name = "advancedToolStripMenuItem";
+			this.advancedToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.advancedToolStripMenuItem.Text = "Advanced";
+			// 
+			// sendCommandToolStripMenuItem
+			// 
+			this.sendCommandToolStripMenuItem.Name = "sendCommandToolStripMenuItem";
+			this.sendCommandToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.sendCommandToolStripMenuItem.Text = "Send Command";
+			this.sendCommandToolStripMenuItem.Click += new System.EventHandler(this.sendCommandToolStripMenuItem_Click);
+			// 
 			// iconsList
 			// 
 			this.iconsList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
@@ -336,22 +444,23 @@ namespace Kontrol_2_Server
 			// 
 			// tabPage2
 			// 
-			this.tabPage2.Controls.Add(this.listView1);
 			this.tabPage2.Location = new System.Drawing.Point(4, 24);
+			this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.tabPage2.Name = "tabPage2";
-			this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage2.Size = new System.Drawing.Size(1293, 253);
+			this.tabPage2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			this.tabPage2.Size = new System.Drawing.Size(1293, 254);
 			this.tabPage2.TabIndex = 1;
-			this.tabPage2.Text = "Proccess Manager";
+			this.tabPage2.Text = "Log";
 			this.tabPage2.UseVisualStyleBackColor = true;
 			// 
-			// listView1
+			// tabPage3
 			// 
-			this.listView1.Location = new System.Drawing.Point(142, 55);
-			this.listView1.Name = "listView1";
-			this.listView1.Size = new System.Drawing.Size(121, 97);
-			this.listView1.TabIndex = 0;
-			this.listView1.UseCompatibleStateImageBehavior = false;
+			this.tabPage3.Location = new System.Drawing.Point(4, 24);
+			this.tabPage3.Name = "tabPage3";
+			this.tabPage3.Size = new System.Drawing.Size(1293, 254);
+			this.tabPage3.TabIndex = 2;
+			this.tabPage3.Text = "Settings";
+			this.tabPage3.UseVisualStyleBackColor = true;
 			// 
 			// statusStrip1
 			// 
@@ -405,6 +514,7 @@ namespace Kontrol_2_Server
 			// panel1
 			// 
 			this.panel1.Location = new System.Drawing.Point(12, 12);
+			this.panel1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(1298, 288);
 			this.panel1.TabIndex = 4;
@@ -414,6 +524,71 @@ namespace Kontrol_2_Server
 			this.statusUpdate.Interval = 1000;
 			this.statusUpdate.Tick += new System.EventHandler(this.statusUpdate_Tick);
 			// 
+			// systemTray
+			// 
+			this.systemTray.BalloonTipText = "Right Click for options";
+			this.systemTray.BalloonTipTitle = "Kontrol 2 Server - Running";
+			this.systemTray.ContextMenuStrip = this.notifyStrip;
+			this.systemTray.Icon = ((System.Drawing.Icon)(resources.GetObject("systemTray.Icon")));
+			this.systemTray.Text = "Kontrol 2 Server";
+			this.systemTray.Visible = true;
+			// 
+			// notifyStrip
+			// 
+			this.notifyStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showToolStripMenuItem,
+            this.exitToolStripMenuItem});
+			this.notifyStrip.Name = "notifyStrip";
+			this.notifyStrip.Size = new System.Drawing.Size(104, 48);
+			// 
+			// showToolStripMenuItem
+			// 
+			this.showToolStripMenuItem.Name = "showToolStripMenuItem";
+			this.showToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.showToolStripMenuItem.Text = "Show";
+			this.showToolStripMenuItem.Click += new System.EventHandler(this.showToolStripMenuItem_Click);
+			// 
+			// exitToolStripMenuItem
+			// 
+			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.exitToolStripMenuItem.Text = "Exit";
+			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+			// 
+			// compileCScriptToolStripMenuItem
+			// 
+			this.compileCScriptToolStripMenuItem.Name = "compileCScriptToolStripMenuItem";
+			this.compileCScriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.compileCScriptToolStripMenuItem.Text = "Compile C# Script";
+			// 
+			// keyloggerToolStripMenuItem
+			// 
+			this.keyloggerToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5360;
+			this.keyloggerToolStripMenuItem.Name = "keyloggerToolStripMenuItem";
+			this.keyloggerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.keyloggerToolStripMenuItem.Text = "Keylogger";
+			// 
+			// visitWebsiteToolStripMenuItem
+			// 
+			this.visitWebsiteToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_25;
+			this.visitWebsiteToolStripMenuItem.Name = "visitWebsiteToolStripMenuItem";
+			this.visitWebsiteToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.visitWebsiteToolStripMenuItem.Text = "Visit Website";
+			// 
+			// chatToolStripMenuItem
+			// 
+			this.chatToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10101;
+			this.chatToolStripMenuItem.Name = "chatToolStripMenuItem";
+			this.chatToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.chatToolStripMenuItem.Text = "Chat";
+			this.chatToolStripMenuItem.Click += new System.EventHandler(this.chatToolStripMenuItem_Click);
+			// 
+			// changeWallpaperToolStripMenuItem
+			// 
+			this.changeWallpaperToolStripMenuItem.Name = "changeWallpaperToolStripMenuItem";
+			this.changeWallpaperToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.changeWallpaperToolStripMenuItem.Text = "Change Wallpaper";
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -422,6 +597,7 @@ namespace Kontrol_2_Server
 			this.Controls.Add(this.mainTab);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.statusStrip1);
+			this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.Name = "MainForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "ReKode Kontrol 2 - Server";
@@ -430,9 +606,9 @@ namespace Kontrol_2_Server
 			this.mainTab.ResumeLayout(false);
 			this.tabPage1.ResumeLayout(false);
 			this.listViewStrip.ResumeLayout(false);
-			this.tabPage2.ResumeLayout(false);
 			this.statusStrip1.ResumeLayout(false);
 			this.statusStrip1.PerformLayout();
+			this.notifyStrip.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -470,7 +646,6 @@ namespace Kontrol_2_Server
 		private System.Windows.Forms.ToolStripMenuItem playSinewaveFrequencyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem monitoringToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem proccessManagerToolStripMenuItem;
-		private System.Windows.Forms.ListView listView1;
 		private System.Windows.Forms.ToolStripMenuItem hideWindowsElementsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem miscToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem remoteShellToolStripMenuItem;
@@ -481,6 +656,25 @@ namespace Kontrol_2_Server
 		private System.Windows.Forms.ToolStripMenuItem remoteDesktopToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem remoteWebcamToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem remoteAudioToolStripMenuItem;
+		private System.Windows.Forms.NotifyIcon systemTray;
+		private System.Windows.Forms.ContextMenuStrip notifyStrip;
+		private System.Windows.Forms.ToolStripMenuItem showToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+		private System.Windows.Forms.TabPage tabPage3;
+		private System.Windows.Forms.ToolStripMenuItem manageClientToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem1;
+		private System.Windows.Forms.ToolStripMenuItem shutdownToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem sleepToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem restartToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem uninstallToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem showLocationToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem advancedToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem sendCommandToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem visitWebsiteToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem chatToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem changeWallpaperToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem keyloggerToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem compileCScriptToolStripMenuItem;
 	}
 }
 

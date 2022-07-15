@@ -30,6 +30,9 @@ namespace Kontrol_2_Server
 		public long fo_size = 0;
 		public byte[] recvFile = new byte[1];
 
+
+		public ProgressBar pb = new ProgressBar();
+
 		public FileManagerForm()
 		{
 			InitializeComponent();
@@ -41,7 +44,7 @@ namespace Kontrol_2_Server
 			try
 			{
 				filesList.Items.Clear();
-				new MainForm().SendCommand("list_drives", clientId);
+				MainForm.SendCommand("list_drives", clientId);
 				//updateFiles.Start();
 			}
 			catch (Exception)
@@ -55,7 +58,7 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				new MainForm().SendCommand("cd\n" + pathBox.Text, clientId);
+				MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
 				files = 0;
 				folders = 0;
 				filesList.Items.Clear();
@@ -93,7 +96,7 @@ namespace Kontrol_2_Server
 					folders = 0;
 					filesList.Items.Clear();
 					currentDirectoryFiles.Clear();
-					new MainForm().SendCommand("list_drives", clientId);
+					MainForm.SendCommand("list_drives", clientId);
 				}
 			}
 			catch (Exception)
@@ -128,7 +131,7 @@ namespace Kontrol_2_Server
 				}));
 				filesList.Invoke(new MethodInvoker(delegate
 				{
-					string[] lv_row = { name, normalizeFileSize(long.Parse(size)), cdate };
+					string[] lv_row = { name, normalizeFileSize(size), cdate };
 					ListViewItem lv = new ListViewItem(lv_row);
 					TreeNode tn = new TreeNode();
 					switch (type)
@@ -176,8 +179,7 @@ namespace Kontrol_2_Server
 					rootTree.Nodes[0].Nodes.Add(ctn);
 					rootTree.ExpandAll();
 				}
-
-				string[] row = { name, normalizeFileSize(long.Parse(size)), cdate };
+				string[] row = { name, normalizeFileSize(size), cdate };
 				ListViewItem lv = new ListViewItem(row);
 				TreeNode tn = new TreeNode();
 				switch (type)
@@ -206,29 +208,37 @@ namespace Kontrol_2_Server
 			MainForm.fmf = new FileManagerForm();
 		}
 
-		private string normalizeFileSize(long number) //epic math
+		private string normalizeFileSize(string snumber) //epic math
 		{
-			string type = " GB";
-			string rer = "";
-			long size = (number / (1024 * 1024 * 1024)); //like why doesn't 1024 ^ 3 work?! anyway convert bytes to gbs
-			if (size < 1) //check if the size (in gbs) is lesser than one
+			try
 			{
-				size = (number / (1024 * 1024)); //if yes then convert to mbs
-				type = " MB";
-				rer = size.ToString("0.00") + type;
+				long number = int.Parse(snumber);
+				string type = " GB";
+				string rer = "";
+				long size = (number / (1024 * 1024 * 1024)); //why doesn't 1024 ^ 3 work????
+				if (size < 1) //check if the size (in gbs) is lesser than one
+				{
+					size = (number / (1024 * 1024)); //if yes then convert to mbs
+					type = " MB";
+					rer = size.ToString("0.00") + type;
+				}
+				if (size < 1) //check if the size (in mbs) is lesser than one
+				{
+					size = (number / (1024)); //if yes than convert to kbs
+					type = " KB";
+					rer = size.ToString("0.00") + type;
+				}
+				if (false) //check if the size (in kbs ) is lesser than one
+				{
+					type = " B";
+					rer = number.ToString() + type; //no need to convert
+				}
+				return rer;
 			}
-			if (size < 1) //check if the size (in mbs) is lesser than one
+			catch (Exception)
 			{
-				size = (number / (1024)); //if yes than convert to kbs
-				type = " KB";
-				rer = size.ToString("0.00") + type;
+				return "N/A";
 			}
-			if (false) //check if the size (in kbs ) is lesser than one
-			{
-				type = " B";
-				rer = number.ToString() + type; //no need to convert
-			}
-			return rer;
 		}
 
 		private void rootTree_DoubleClick(object sender, EventArgs e)
@@ -240,7 +250,7 @@ namespace Kontrol_2_Server
 					if (rootTree.SelectedNode.Text == username)
 					{
 						pathBox.Text = String.Empty;
-						new MainForm().SendCommand("list_drives", clientId);
+						MainForm.SendCommand("list_drives", clientId);
 						filesList.Items.Clear();
 						rootTree.Nodes.Clear();
 						currentDirectoryFiles.Clear();
@@ -249,7 +259,7 @@ namespace Kontrol_2_Server
 					{
 
 						pathBox.Text = rootTree.SelectedNode.ToString() + @"\";
-						new MainForm().SendCommand("cd\n" + rootTree.SelectedNode.Text + @"\", clientId);
+						MainForm.SendCommand("cd\n" + rootTree.SelectedNode.Text + @"\", clientId);
 						filesList.Items.Clear();
 						currentDirectoryFiles.Clear();
 					}
@@ -263,7 +273,7 @@ namespace Kontrol_2_Server
 
 		private void filesList_CollectionChanged()
 		{
-			if (statusStrip.Items.Count > 0)
+			if (statusStrip.Items.Count > 1)
 			{
 				statusStrip.Items[0].Text = "Files: " + files + " |";
 				statusStrip.Items[1].Text = "Folders: " + folders + " |";
@@ -281,13 +291,13 @@ namespace Kontrol_2_Server
 			{
 				if (currentDirectoryFiles.Count > 0)
 				{
-					FileAttributes attr = File.GetAttributes(currentDirectoryFiles[filesList.SelectedIndices[0]]);
-					if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+					//FileAttributes attr = File.GetAttributes(currentDirectoryFiles[filesList.SelectedIndices[0]]); //<-- WHAT THE FUCK IS THISSSSSSSSSSSs
+					if (filesList.Items[filesList.SelectedIndices[0]].ImageIndex == 0 || filesList.Items[filesList.SelectedIndices[0]].ImageIndex == 2)
 					{
 						try
 						{
 							pathBox.Text = Path.Combine(pathBox.Text, currentDirectoryFiles[filesList.SelectedIndices[0]]);
-							new MainForm().SendCommand("cd\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
+							MainForm.SendCommand("cd\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
 							filesList.Items.Clear();
 							currentDirectoryFiles.Clear();
 						}
@@ -300,13 +310,13 @@ namespace Kontrol_2_Server
 				}
 				else
 				{
-					FileAttributes attr = File.GetAttributes(filesList.FocusedItem.Text);
-					if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+					//FileAttributes attr = File.GetAttributes(filesList.FocusedItem.Text);
+					if (filesList.Items[filesList.SelectedIndices[0]].ImageIndex == 0 || filesList.Items[filesList.SelectedIndices[0]].ImageIndex == 2)
 					{
 						try
 						{
 							pathBox.Text = Path.Combine(pathBox.Text, filesList.FocusedItem.Text);
-							new MainForm().SendCommand("cd\n" + filesList.FocusedItem.Text, clientId);
+							MainForm.SendCommand("cd\n" + filesList.FocusedItem.Text, clientId);
 							filesList.Items.Clear();
 						}
 						catch (Exception)
@@ -328,9 +338,9 @@ namespace Kontrol_2_Server
 					filesList.Items.Clear();
 					currentDirectoryFiles.Clear();
 					if (!string.IsNullOrEmpty(pathBox.Text))
-						new MainForm().SendCommand("cd\n" + pathBox.Text, clientId);
+						MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
 					else
-						new MainForm().SendCommand("list_drives", clientId);
+						MainForm.SendCommand("list_drives", clientId);
 				}
 				catch (Exception)
 				{
@@ -349,14 +359,14 @@ namespace Kontrol_2_Server
 				{
 					filesList.Items.Clear();
 					currentDirectoryFiles.Clear(); 
-					new MainForm().SendCommand("cd\n" + Path.Combine(prev_dir), clientId);
+					MainForm.SendCommand("cd\n" + Path.Combine(prev_dir), clientId);
 					pathBox.Text = prev_dir;
 				}
 				else
 				{
 					filesList.Items.Clear();
 					currentDirectoryFiles.Clear();
-					new MainForm().SendCommand("list_drives", clientId);
+					MainForm.SendCommand("list_drives", clientId);
 				}
 			}
 			catch (Exception)
@@ -380,14 +390,14 @@ namespace Kontrol_2_Server
 					if (d.Parent == null) //is root
 					{
 						rootTree.Nodes[0].Nodes.Clear();
-						new MainForm().SendCommand("list_drives", clientId);
+						MainForm.SendCommand("list_drives", clientId);
 						pathBox.Text = string.Empty;
 					}
 					else
 					{
 						prev_dir = pathBox.Text;
 						pathBox.Text = Path.GetFullPath(Path.Combine(pathBox.Text, @"..\"));
-						new MainForm().SendCommand("cd\n" + Path.Combine(pathBox.Text), clientId);
+						MainForm.SendCommand("cd\n" + Path.Combine(pathBox.Text), clientId);
 					}
 				}
 			}
@@ -404,7 +414,7 @@ namespace Kontrol_2_Server
 			{
 				if (filesList.FocusedItem != null)
 				{
-					new MainForm().SendCommand("file_operation\nfile_delete\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
+					MainForm.SendCommand("file_operation\nfile_delete\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
 				}
 			}
 			catch (Exception)
@@ -452,11 +462,11 @@ namespace Kontrol_2_Server
 				{
 					case "file_move": //move
 						fo_dest = currentDirectoryFiles[filesList.SelectedIndices[0]];
-						new MainForm().SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
+						MainForm.SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
 						break;
 					case "file_copy": //copy
 						fo_dest = currentDirectoryFiles[filesList.SelectedIndices[0]];
-						new MainForm().SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
+						MainForm.SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
 						break;
 				}
 				fo_mode = "none";
@@ -467,11 +477,11 @@ namespace Kontrol_2_Server
 				{
 					case "file_move":
 						fo_dest = Path.Combine(pathBox.Text);
-						new MainForm().SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
+						MainForm.SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
 						break;
 					case "file_copy": //copy
 						fo_dest = Path.Combine(pathBox.Text);
-						new MainForm().SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
+						MainForm.SendCommand("file_operation\n" + fo_mode + "\n" + fo_src + "\n" + fo_dest, clientId);
 						break;
 				}
 				fo_mode = "none";
@@ -501,10 +511,10 @@ namespace Kontrol_2_Server
 			switch (fo_mode)
 			{
 				case "file_rename":
-					new MainForm().SendCommand("file_operation\nfile_rename\n" + currentDirectoryFiles[e.Item] + "\n" + Path.Combine(Path.GetDirectoryName(currentDirectoryFiles[e.Item]), e.Label), clientId);
+					MainForm.SendCommand("file_operation\nfile_rename\n" + currentDirectoryFiles[e.Item] + "\n" + Path.Combine(Path.GetDirectoryName(currentDirectoryFiles[e.Item]), e.Label), clientId);
 					break;
 				case "file_create":
-					new MainForm().SendCommand("file_operation\nfile_create\n" + Path.Combine(pathBox.Text, e.Label), clientId);
+					MainForm.SendCommand("file_operation\nfile_create\n" + Path.Combine(pathBox.Text, e.Label), clientId);
 					break;
 			}
 		}
@@ -517,7 +527,7 @@ namespace Kontrol_2_Server
 				fo_src = currentDirectoryFiles[filesList.SelectedIndices[0]];
 				try
 				{
-					new MainForm().SendCommand("file_operation\nfile_open\n" + fo_src, clientId);
+					MainForm.SendCommand("file_operation\nfile_open\n" + fo_src, clientId);
 				}
 				catch (Exception)
 				{
@@ -552,9 +562,8 @@ namespace Kontrol_2_Server
 					if (fd.ShowDialog() == DialogResult.OK)
 					{
 						if (string.IsNullOrEmpty(fd.FileName) || string.IsNullOrWhiteSpace(fd.FileName)) return;
-						new MainForm().SendCommand("file_operation\nfile_download\n" + currentDirectoryFiles[filesList.SelectedIndices[0]] + "\n" + Path.GetFileName(fd.FileName) + "\n" + new FileInfo(fd.FileName).Length, clientId);
+						MainForm.SendCommand("file_operation\nfile_download\n" + Path.GetDirectoryName(currentDirectoryFiles[filesList.SelectedIndices[0]]) + "\n" + Path.GetFileName(fd.FileName) + "\n" + new FileInfo(fd.FileName).Length, clientId);
 						MainForm.fo_path = fd.FileName;
-						MainForm.fo_mode = "upload";
 					}
 				}
 				catch (Exception)
@@ -570,9 +579,8 @@ namespace Kontrol_2_Server
 					if (fd.ShowDialog() == DialogResult.OK)
 					{
 						if (string.IsNullOrEmpty(fd.FileName) || string.IsNullOrWhiteSpace(fd.FileName)) return;
-						new MainForm().SendCommand("file_operation\nfile_download\n" + pathBox.Text + "\n" + Path.GetFileName(fd.FileName) + "\n" + new FileInfo(fd.FileName).Length, clientId);
 						MainForm.fo_path = fd.FileName;
-						MainForm.fo_mode = "upload";
+						MainForm.SendCommand("file_operation\nfile_download\n" + pathBox.Text + "\n" + Path.GetFileName(fd.FileName) + "\n" + new FileInfo(fd.FileName).Length, clientId);
 					}
 				}
 				catch (Exception)
@@ -580,6 +588,20 @@ namespace Kontrol_2_Server
 					this.Close();
 				}
 			}
+			if (statusStrip.Items.Count == 2)
+			{
+				ToolStripControlHost host;
+				FlowLayoutPanel panel;
+				panel = new FlowLayoutPanel();
+				panel.FlowDirection = FlowDirection.TopDown;
+				panel.WrapContents = false;
+				panel.AutoSize = true;
+				panel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+				host = new ToolStripControlHost(panel);
+				statusStrip.Items.Add(host);
+				panel.Controls.Add(pb);
+			}
+			pb.Value = 0;
 		}
 
 		private void downloadToolStripMenuItem_Click(object sender, EventArgs e)
@@ -592,8 +614,9 @@ namespace Kontrol_2_Server
 				{
 					if (string.IsNullOrEmpty(sd.FileName) || string.IsNullOrWhiteSpace(sd.FileName)) return;
 					MainForm.fo_path = sd.FileName;
-					new MainForm().SendCommand("file_operation\nfile_upload\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
+					MainForm.SendCommand("file_operation\nfile_upload\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
 				}
+
 			}
 			else
 			{
@@ -603,9 +626,23 @@ namespace Kontrol_2_Server
 				{
 					if (string.IsNullOrEmpty(sd.FileName) || string.IsNullOrWhiteSpace(sd.FileName)) return;
 					MainForm.fo_path = sd.FileName;
-					new MainForm().SendCommand("file_operation\nfile_upload\n" + pathBox.Text, clientId);
+					MainForm.SendCommand("file_operation\nfile_upload\n" + pathBox.Text, clientId);
 				}
 			}
+			if (statusStrip.Items.Count == 2)
+			{
+				ToolStripControlHost host;
+				FlowLayoutPanel panel;
+				panel = new FlowLayoutPanel();
+				panel.FlowDirection = FlowDirection.TopDown;
+				panel.WrapContents = false;
+				panel.AutoSize = true;
+				panel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+				host = new ToolStripControlHost(panel);
+				statusStrip.Items.Add(host);
+				panel.Controls.Add(pb);
+			}
+			pb.Value = 0;
 		}
 
 		private void filesList_SelectedIndexChanged(object sender, EventArgs e)
@@ -628,6 +665,22 @@ namespace Kontrol_2_Server
 				else if (filesList.SelectedItems[0].ImageIndex == 1)
 					statusStrip.Items.Add("Selected: " + Path.GetFileName(currentDirectoryFiles[filesList.SelectedIndices[0]]) + " | ");
 			}*/
+		}
+
+		public void progressBarUpdate(float value)
+		{
+			try
+			{
+				if (this.InvokeRequired)
+				{
+					statusStrip.Invoke(new MethodInvoker(delegate
+					{
+						pb.Value = (int)Math.Round(value);
+					}));
+				}
+				else
+					pb.Value = (int)Math.Round(value);
+			} catch { }
 		}
 	}
 

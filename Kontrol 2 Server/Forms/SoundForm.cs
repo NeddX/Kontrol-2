@@ -51,15 +51,15 @@ namespace Kontrol_2_Server
 				MainForm mf = new MainForm();
 				if (!fileCheck.Checked)
 				{
-					mf.SendCommand("play_systemsound\n" + soundCombo.SelectedIndex, clientId);
+					MainForm.SendCommand("play_systemsound\n" + soundCombo.SelectedIndex, clientId);
 				}
 				else //play a sound file
 				{
 
 				}
 				/*MainForm mf = new MainForm();
-				mf.SendCommand("play_soundfile\n" + playFile.ToString().ToLower(), clientId);
-				mf.SendFile(clientId, soundBox.Text);*/
+				MainForm.SendCommand("play_soundfile\n" + playFile.ToString().ToLower(), clientId);
+				MainForm.SendFile(clientId, soundBox.Text);*/
 			}
 			catch (Exception)
 			{

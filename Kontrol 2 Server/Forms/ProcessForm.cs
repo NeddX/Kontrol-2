@@ -55,7 +55,7 @@ namespace Kontrol_2_Server
 			{
 				new Thread(() => 
 				{
-					new MainForm().SendCommand("list_proceses", clientId);
+					MainForm.SendCommand("list_proceses", clientId);
 				}).Start();
 			}
 			catch (Exception)
@@ -73,7 +73,7 @@ namespace Kontrol_2_Server
 			{
 				new Thread(() =>
 				{
-					new MainForm().SendCommand("list_proceses", clientId);
+					MainForm.SendCommand("list_proceses", clientId);
 				}).Start();
 			}
 			catch (Exception)
@@ -99,7 +99,7 @@ namespace Kontrol_2_Server
 			{
 				new Thread(() =>
 				{
-					new MainForm().SendCommand("list_proceses", clientId);
+					MainForm.SendCommand("list_proceses", clientId);
 				}).Start();
 			}
 			catch (Exception)
@@ -121,7 +121,7 @@ namespace Kontrol_2_Server
 			{
 				if (processList.SelectedIndices.Count > 0)
 				{
-					new MainForm().SendCommand("kill_process\n" + processList.Items[processList.SelectedIndices[0]].SubItems[1].Text, clientId);
+					MainForm.SendCommand("kill_process\n" + processList.Items[processList.SelectedIndices[0]].SubItems[1].Text, clientId);
 				}
 			}
 			catch (Exception)
@@ -178,7 +178,7 @@ namespace Kontrol_2_Server
 			{
 				if (!upload)
 				{
-					new MainForm().SendCommand("create_process\n" + visibilityCombo.SelectedIndex + "\n" + Path.Combine(pathBox.Text) + "\n" + argBox.Text + "\n" + asciiCheck.Checked + "\n" + shellCheck.Checked, clientId);
+					MainForm.SendCommand("create_process\n" + visibilityCombo.SelectedIndex + "\n" + Path.Combine(pathBox.Text) + "\n" + argBox.Text + "\n" + asciiCheck.Checked + "\n" + shellCheck.Checked, clientId);
 				}
 				else //Will come back to this later
 				{

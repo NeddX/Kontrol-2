@@ -23,7 +23,7 @@ namespace Kontrol_2_Server
 			this.ActiveControl = textBox1;
 			try
 			{
-				new MainForm().SendCommand("start_remoteshell", clientId);
+				MainForm.SendCommand("start_remoteshell", clientId);
 			}
 			catch (Exception)
 			{
@@ -39,7 +39,7 @@ namespace Kontrol_2_Server
 			{
 				try
 				{
-					new MainForm().SendCommand("cmd_in\n" + textBox1.Text, clientId);
+					MainForm.SendCommand("cmd_in\n" + textBox1.Text, clientId);
 					textBox1.Text = "";
 				}
 				catch (Exception)
@@ -74,7 +74,7 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				new MainForm().SendCommand("cmd_kill", clientId);
+				MainForm.SendCommand("cmd_kill", clientId);
 				MainForm.rsf = new RemoteShellForm();
 			}
 			catch { }

@@ -52,7 +52,7 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				new MainForm().SendCommand("play_frequency\n" + frequencyBox.Text + "\n" + durationBox.Text, clientId);
+				MainForm.SendCommand("play_frequency\n" + frequencyBox.Text + "\n" + durationBox.Text, clientId);
 			}
 			catch (Exception)
 			{

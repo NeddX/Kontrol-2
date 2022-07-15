@@ -91,7 +91,6 @@
 			// 
 			this.rootTree.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-			this.rootTree.Cursor = System.Windows.Forms.Cursors.Default;
 			this.rootTree.ImageIndex = 0;
 			this.rootTree.ImageList = this.iconList;
 			this.rootTree.Location = new System.Drawing.Point(0, 29);

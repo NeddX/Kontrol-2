@@ -29,7 +29,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ntaskbar\nhide", clientId);
+						MainForm.SendCommand("element\ntaskbar\nhide", clientId);
 					}
 					catch (Exception)
 					{
@@ -45,7 +45,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ntaskbar\nshow", clientId);
+						MainForm.SendCommand("element\ntaskbar\nshow", clientId);
 					}
 					catch (Exception)
 					{
@@ -65,7 +65,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ndesktopIcons\nhide", clientId);
+						MainForm.SendCommand("element\ndesktopIcons\nhide", clientId);
 					}
 					catch (Exception)
 					{
@@ -81,7 +81,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ndesktopIcons\nshow", clientId);
+						MainForm.SendCommand("element\ndesktopIcons\nshow", clientId);
 					}
 					catch (Exception)
 					{
@@ -101,7 +101,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ntrayIcons\nhide", clientId);
+						MainForm.SendCommand("element\ntrayIcons\nhide", clientId);
 					}
 					catch (Exception)
 					{
@@ -117,7 +117,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\ntrayIcons\nshow", clientId);
+						MainForm.SendCommand("element\ntrayIcons\nshow", clientId);
 					}
 					catch (Exception)
 					{
@@ -137,7 +137,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\nstartMenu\nhide", clientId);
+						MainForm.SendCommand("element\nstartMenu\nhide", clientId);
 					}
 					catch (Exception)
 					{
@@ -153,7 +153,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\nstartMenu\nshow", clientId);
+						MainForm.SendCommand("element\nstartMenu\nshow", clientId);
 					}
 					catch (Exception)
 					{
@@ -173,7 +173,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\nclock\nhide", clientId);
+						MainForm.SendCommand("element\nclock\nhide", clientId);
 					}
 					catch (Exception)
 					{
@@ -189,7 +189,7 @@ namespace Kontrol_2_Server
 				{
 					try
 					{
-						new MainForm().SendCommand("element\nclock\nshow", clientId);
+						MainForm.SendCommand("element\nclock\nshow", clientId);
 					}
 					catch (Exception)
 					{

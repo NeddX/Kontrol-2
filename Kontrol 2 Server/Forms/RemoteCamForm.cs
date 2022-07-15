@@ -24,17 +24,17 @@ namespace Kontrol_2_Server
 		public bool wcStream;
 		private string spath = null;
 		private string rpath = null;
-		private List<byte[]> imagesList = new List<byte[]>();
+		private List<byte[]> imagesList = new List<byte[]>(); //for rec
 		public RemoteCamForm()
 		{
-			InitializeComponent(); 
+			InitializeComponent();
 		}
 
 		private void RemoteCamForm_Load(object sender, EventArgs e)
 		{
-			new MainForm().SendCommand("remote_webcam\ncapture_devices", clientId);
-			new MainForm().SendCommand("remote_webcam\ndevice_resolutions\n0", clientId);
-			//new MainForm().SendCommand("remote_webcam\nbegin_stream", clientId);
+			MainForm.SendCommand("remote_webcam\ncapture_devices", clientId);
+			MainForm.SendCommand("remote_webcam\ndevice_resolutions\n0", clientId);
+			//MainForm.SendCommand("remote_webcam\nbegin_stream", clientId);
 		}
 		public void listDevices(string devices)
 		{
@@ -48,6 +48,7 @@ namespace Kontrol_2_Server
 						devicesCombo.Items.Add(device);
 					}
 					devicesCombo.SelectedIndex = 0;
+					devicesCombo.Enabled = true;
 				}));
 			}
 			else
@@ -57,6 +58,7 @@ namespace Kontrol_2_Server
 					devicesCombo.Items.Add(device);
 				}
 				devicesCombo.SelectedIndex = 0;
+				devicesCombo.Enabled = true;
 			}
 		}
 		public void listResolutions(string resolutions)
@@ -72,6 +74,7 @@ namespace Kontrol_2_Server
 						resCombo.Items.Add(res);
 					}
 					resCombo.SelectedIndex = 0;
+					resCombo.Enabled = true;
 				}));
 			}
 			else
@@ -82,33 +85,33 @@ namespace Kontrol_2_Server
 					resCombo.Items.Add(res);
 				}
 				resCombo.SelectedIndex = 0;
+				resCombo.Enabled = true;
 			}
 		}
-		public void displayImage(Bitmap image)
+		public void displayImage(byte[] imageBytes)
 		{
 			if (wcStream)
 			{
-				if (this.InvokeRequired)
+				videoBox.Image = (Bitmap)Image.FromStream(new MemoryStream(imageBytes));
+				/*if (this.InvokeRequired)
 				{
 					videoBox.Invoke(new MethodInvoker(delegate
 					{
-						videoBox.Image = image;
+						videoBox.Image = (Bitmap)Image.FromStream(new MemoryStream(imageBytes));
 						if (recButton.Text == "Stop Recording")
 						{
-							ImageConverter converter = new ImageConverter();
-							imagesList.Add((byte[])converter.ConvertTo(videoBox.Image, typeof(byte[])));
+							imagesList.Add(imageBytes);
 						}
 					}));
 				}
 				else
 				{
-					videoBox.Image = image;
+					videoBox.Image = (Bitmap)Image.FromStream(new MemoryStream(imageBytes));
 					if (recButton.Text == "Stop Recording")
 					{
-						ImageConverter converter = new ImageConverter();
-						imagesList.Add((byte[])converter.ConvertTo(videoBox.Image, typeof(byte[])));
+						imagesList.Add(imageBytes);
 					}
-				}
+				}*/
 			}
 		}
 
@@ -116,7 +119,7 @@ namespace Kontrol_2_Server
 		{
 			if (startButton.Text.ToLower() == "start")
 			{
-				new MainForm().SendCommand("remote_webcam\nbegin_stream\n" + devicesCombo.SelectedIndex + "&" + resCombo.SelectedIndex, clientId);
+				MainForm.SendCommand("remote_webcam\nbegin_stream\n" + devicesCombo.SelectedIndex + "&" + resCombo.SelectedIndex + "&" + qualityBox.Text, clientId);
 				resCombo.Enabled = false;
 				devicesCombo.Enabled = false;
 				recButton.Enabled = true;
@@ -125,7 +128,7 @@ namespace Kontrol_2_Server
 			}
 			else
 			{
-				new MainForm().SendCommand("remote_webcam\nend_stream", clientId);
+				MainForm.SendCommand("remote_webcam\nend_stream", clientId);
 				resCombo.Enabled = true;
 				devicesCombo.Enabled = true;
 				recButton.Enabled = false;
@@ -156,12 +159,12 @@ namespace Kontrol_2_Server
 		{
 			MainForm.rcf = new RemoteCamForm();
 			if(wcStream)
-				new MainForm().SendCommand("remote_webcam\nend_stream", clientId);
+				MainForm.SendCommand("remote_webcam\nend_stream", clientId);
 		}
 
 		private void devicesCombo_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			new MainForm().SendCommand("remote_webcam\ndevice_resolutions\n" + devicesCombo.SelectedIndex, clientId);
+			MainForm.SendCommand("remote_webcam\ndevice_resolutions\n" + devicesCombo.SelectedIndex, clientId);
 		}
 
 		private void recButton_Click(object sender, EventArgs e)
@@ -202,6 +205,29 @@ namespace Kontrol_2_Server
 		private void videoEncoder_Tick(object sender, EventArgs e)
 		{
 
+		}
+
+		private void qualityBox_TextChanged(object sender, EventArgs e)
+		{
+			int temp;
+			if (qualityBox.Text == string.Empty)
+			{
+				qualityBox.Text = "10";
+			}
+			else if (!int.TryParse(qualityBox.Text, out temp))
+			{
+				{
+					qualityBox.Text = qualityBox.Text.Remove(qualityBox.Text.Length - 1);
+				}
+			}
+			else if (temp < 0)
+			{
+				qualityBox.Text = "10";
+			}
+			else if (temp > 100)
+			{
+				qualityBox.Text = "100";
+			}
 		}
 	}
 }

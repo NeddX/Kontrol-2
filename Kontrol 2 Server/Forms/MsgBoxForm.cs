@@ -22,10 +22,11 @@ namespace Kontrol_2_Server
 
 		private void sendButton_Click(object sender, EventArgs e)
 		{
-			string cmd = "display_msgbox" + "\n" + soundCheck.Checked.ToString().ToLower() + "\n" + titleBox.Text + "\n" + msgBox.Text + "\n" + iconCombo.SelectedIndex + "\n" + buttonsCombo.SelectedIndex;
+			//display_msgbox\nThe title\n1\n1\n@{msg}Error! Blah blah\nSecond line of blah blahs
+			string cmd = "display_msgbox\n" + titleBox.Text + "\n" + iconCombo.SelectedIndex + "\n" + buttonsCombo.SelectedIndex + "\n@{msg}" + msgBox.Text;
 			try
 			{
-				new MainForm().SendCommand(cmd, clientId);
+				MainForm.SendCommand(cmd, clientId);
 			}
 			/*catch (SocketException)
 			{

@@ -30,19 +30,14 @@ namespace Kontrol_2_Server
 
 		private void RemoteAudioForm_Load(object sender, EventArgs e)
 		{
-			new MainForm().SendCommand("remote_audio\naudio_devices", clientId);
-		}
-		
-		private void RemoteAudioForm_FormShown(object sender, EventArgs e)
-		{
-			waveViewer.FitToScreen(); //useless doesnt work. dont forget to remove this
+			MainForm.SendCommand("remote_audio\naudio_devices", clientId);
 		}
 
 		private void RemoteAudioForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			MainForm.raf = new RemoteAudioForm();
 			if (startButton.Text == "Stop")
-				new MainForm().SendCommand("remote_audio\nend_stream", clientId);
+				MainForm.SendCommand("remote_audio\nend_stream", clientId);
 		}
 
 		public void initialize(string type, int sampleRate = 48000, int channels = 2)
@@ -90,7 +85,8 @@ namespace Kontrol_2_Server
 							devicesCombo.Items.Add(device);
 						}
 					}
-					devicesCombo.SelectedIndex = 0; 
+					devicesCombo.SelectedIndex = 0;
+					devicesCombo.Enabled = true;
 					devicesCombo.Items.Add("Internal Audio");
 				}));
 			}
@@ -105,6 +101,7 @@ namespace Kontrol_2_Server
 					}
 				}
 				devicesCombo.SelectedIndex = 0;
+				devicesCombo.Enabled = true;
 				devicesCombo.Items.Add("Internal Audio");
 			}
 		}
@@ -113,15 +110,14 @@ namespace Kontrol_2_Server
 		{
 			if (startButton.Text.ToLower() == "start")
 			{
-				if (devicesCombo.GetItemText(devicesCombo.SelectedItem) == "Internal Audio")
+				if (devicesCombo.GetItemText(devicesCombo.SelectedItem).StartsWith("R: "))
 				{
-					new MainForm().SendCommand("remote_audio\nbegin_stream\n-5", clientId);
+					MainForm.SendCommand("remote_audio\nbegin_stream\n" + devicesCombo.GetItemText(devicesCombo.SelectedItem).Substring(devicesCombo.GetItemText(devicesCombo.SelectedItem).IndexOf("ID: ") + 4) + "\nrenderer", clientId);
 				}
 				else
 				{
-					new MainForm().SendCommand("remote_audio\nbegin_stream\n" + devicesCombo.SelectedIndex, clientId);
+					MainForm.SendCommand("remote_audio\nbegin_stream\n" + devicesCombo.SelectedIndex + "\ncapturer", clientId);
 				}
-				qualityCombo.Enabled = false;
 				devicesCombo.Enabled = false;
 				startButton.Text = "Stop";
 				//auStream = true;
@@ -129,8 +125,7 @@ namespace Kontrol_2_Server
 			}
 			else
 			{
-				new MainForm().SendCommand("remote_audio\nend_stream", clientId);
-				qualityCombo.Enabled = true;
+				MainForm.SendCommand("remote_audio\nend_stream", clientId);
 				devicesCombo.Enabled = true;
 				startButton.Text = "Start";
 				//auStream = false;

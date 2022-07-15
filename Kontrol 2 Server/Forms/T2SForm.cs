@@ -20,7 +20,7 @@ namespace Kontrol_2_Server
 
 		private void sendButton_Click(object sender, EventArgs e)
 		{
-			new MainForm().SendCommand("t2s_read\n" + msgBox.Text, clientId);
+			MainForm.SendCommand("t2s_read\n" + msgBox.Text, clientId);
 		}
 	}
 }
