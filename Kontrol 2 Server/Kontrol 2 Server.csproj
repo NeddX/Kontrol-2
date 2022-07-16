@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>Kontrol_2_Server</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
@@ -20,6 +20,7 @@
     <PackageReference Include="AForge.Video" Version="2.2.5" />
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="DeviceId" Version="6.2.0" />
+    <PackageReference Include="FCTB" Version="2.16.24" />
     <PackageReference Include="FFMediaToolkit" Version="4.1.2" />
     <PackageReference Include="FFmpeg.AutoGen" Version="4.4.1.1" />
     <PackageReference Include="FFmpeg.Nightly" Version="20200831.1.0" />

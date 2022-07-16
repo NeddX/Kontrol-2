@@ -408,6 +408,19 @@ namespace Kontrol_2_Client
 
 						Process.Start("cmd.exe", "/c" + args);
 					}
+					else if (cmd == "conditions_getSelfContainedAssemblies")
+					{
+						foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
+						{
+							try
+							{
+								var assembly = AssemblyName.GetAssemblyName(dll);
+								Send($"conditions_scasm\n{assembly.Name}");
+								Thread.Sleep(300); //Let's be friendly to the network bandwith ;)
+							}
+							catch { continue; }
+						}
+					}
 					else if (cmd == "system_shutdown")
 					{
 						var psi = new ProcessStartInfo(Path.Join(Environment.SystemDirectory, "shutdown.exe"), "/s /t 0");
@@ -1536,7 +1549,7 @@ namespace Kontrol_2_Client
 				Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.dll")
 			};
 
-			foreach (string lib in references)
+			/*foreach (string lib in references)
 			{
 				string formatted = Path.Join(AppDomain.CurrentDomain.BaseDirectory, lib.Replace("\r", string.Empty) + ".dll");
 				if (File.Exists(formatted))
@@ -1548,9 +1561,9 @@ namespace Kontrol_2_Client
 						printline(formatted);
 					} catch { continue; }
 				}
-			}
+			}*/
 
-			/*foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
+			foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
 			{
 				try
 				{
@@ -1558,7 +1571,7 @@ namespace Kontrol_2_Client
 					refPaths.Add(dll);
 				}
 				catch { continue; }
-			}*/
+			}
 
 			printline("References:");
 			MetadataReference[] refs = refPaths.Select(r => MetadataReference.CreateFromFile(r)).ToArray();

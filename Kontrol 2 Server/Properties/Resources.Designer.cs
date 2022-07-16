@@ -63,6 +63,16 @@ namespace Kontrol_2_Server.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap csharp {
+            get {
+                object obj = ResourceManager.GetObject("csharp", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap imageres_1008 {
             get {
                 object obj = ResourceManager.GetObject("imageres_1008", resourceCulture);
@@ -163,6 +173,16 @@ namespace Kontrol_2_Server.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap imageres_21 {
+            get {
+                object obj = ResourceManager.GetObject("imageres_21", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap imageres_25 {
             get {
                 object obj = ResourceManager.GetObject("imageres_25", resourceCulture);
@@ -206,6 +226,16 @@ namespace Kontrol_2_Server.Properties {
         internal static System.Drawing.Bitmap imageres_5324 {
             get {
                 object obj = ResourceManager.GetObject("imageres_5324", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap imageres_53241 {
+            get {
+                object obj = ResourceManager.GetObject("imageres_53241", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -266,6 +296,16 @@ namespace Kontrol_2_Server.Properties {
         internal static System.Drawing.Bitmap imageres_81 {
             get {
                 object obj = ResourceManager.GetObject("imageres_81", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap shell32_153 {
+            get {
+                object obj = ResourceManager.GetObject("shell32_153", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
