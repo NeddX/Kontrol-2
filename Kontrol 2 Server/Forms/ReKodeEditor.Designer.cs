@@ -1,4 +1,7 @@
-﻿namespace Kontrol_2_Server
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace Kontrol_2_Server
 {
 	partial class ReKodeEditor
 	{
@@ -60,6 +63,9 @@
 			// button1
 			// 
 			this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+			this.button1.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+			this.button1.FlatAppearance.BorderSize = 3;
+			this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.button1.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 			this.button1.ForeColor = System.Drawing.SystemColors.Control;
 			this.button1.Location = new System.Drawing.Point(149, 3);
@@ -73,8 +79,13 @@
 			// compileBtn
 			// 
 			this.compileBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+			this.compileBtn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+			this.compileBtn.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(122)))), ((int)(((byte)(204)))));
+			this.compileBtn.FlatAppearance.BorderSize = 3;
+			this.compileBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.compileBtn.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 			this.compileBtn.ForeColor = System.Drawing.SystemColors.Control;
+			this.compileBtn.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.compileBtn.Location = new System.Drawing.Point(3, 3);
 			this.compileBtn.Name = "compileBtn";
 			this.compileBtn.Size = new System.Drawing.Size(140, 41);
@@ -184,7 +195,7 @@
 			this.DoubleBuffered = true;
 			this.Name = "ReKodeEditor";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "ReKodeEditor";
+			this.Text = "ReKode Editor";
 			this.Load += new System.EventHandler(this.ReKodeEditor_Load);
 			this.panel1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.fctb)).EndInit();

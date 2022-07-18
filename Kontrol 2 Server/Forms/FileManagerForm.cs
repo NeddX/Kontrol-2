@@ -28,6 +28,7 @@ namespace Kontrol_2_Server
 		public string fo_path = "";
 		public long fo_writeSize = 0;
 		public long fo_size = 0;
+		public string currentPath = "";
 		public byte[] recvFile = new byte[1];
 
 
@@ -157,6 +158,7 @@ namespace Kontrol_2_Server
 					pathBox.Invoke(new MethodInvoker(delegate
 					{
 						pathBox.Text = Path.GetDirectoryName(path);
+						currentPath = pathBox.Text;
 					}));
 				}
 			}
@@ -197,6 +199,7 @@ namespace Kontrol_2_Server
 				if (!string.IsNullOrEmpty(path))
 				{
 					pathBox.Text = Path.GetDirectoryName(path);
+					currentPath = pathBox.Text;
 					currentDirectoryFiles.Add(path);
 				}
 				filesList.Items.Add(lv);
@@ -249,7 +252,8 @@ namespace Kontrol_2_Server
 				{
 					if (rootTree.SelectedNode.Text == username)
 					{
-						pathBox.Text = String.Empty;
+						pathBox.Text = "";
+						currentPath = "";
 						MainForm.SendCommand("list_drives", clientId);
 						filesList.Items.Clear();
 						rootTree.Nodes.Clear();
@@ -259,6 +263,7 @@ namespace Kontrol_2_Server
 					{
 
 						pathBox.Text = rootTree.SelectedNode.ToString() + @"\";
+						currentPath = pathBox.Text;
 						MainForm.SendCommand("cd\n" + rootTree.SelectedNode.Text + @"\", clientId);
 						filesList.Items.Clear();
 						currentDirectoryFiles.Clear();
@@ -297,6 +302,7 @@ namespace Kontrol_2_Server
 						try
 						{
 							pathBox.Text = Path.Combine(pathBox.Text, currentDirectoryFiles[filesList.SelectedIndices[0]]);
+							currentPath = pathBox.Text;
 							MainForm.SendCommand("cd\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
 							filesList.Items.Clear();
 							currentDirectoryFiles.Clear();
@@ -316,6 +322,7 @@ namespace Kontrol_2_Server
 						try
 						{
 							pathBox.Text = Path.Combine(pathBox.Text, filesList.FocusedItem.Text);
+							currentPath = pathBox.Text;
 							MainForm.SendCommand("cd\n" + filesList.FocusedItem.Text, clientId);
 							filesList.Items.Clear();
 						}
@@ -338,7 +345,10 @@ namespace Kontrol_2_Server
 					filesList.Items.Clear();
 					currentDirectoryFiles.Clear();
 					if (!string.IsNullOrEmpty(pathBox.Text))
+					{
 						MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
+						currentPath = pathBox.Text;
+					}
 					else
 						MainForm.SendCommand("list_drives", clientId);
 				}
@@ -361,6 +371,7 @@ namespace Kontrol_2_Server
 					currentDirectoryFiles.Clear(); 
 					MainForm.SendCommand("cd\n" + Path.Combine(prev_dir), clientId);
 					pathBox.Text = prev_dir;
+					currentPath = pathBox.Text;
 				}
 				else
 				{
@@ -391,12 +402,14 @@ namespace Kontrol_2_Server
 					{
 						rootTree.Nodes[0].Nodes.Clear();
 						MainForm.SendCommand("list_drives", clientId);
-						pathBox.Text = string.Empty;
+						pathBox.Text = "";
+						currentPath = "";
 					}
 					else
 					{
 						prev_dir = pathBox.Text;
 						pathBox.Text = Path.GetFullPath(Path.Combine(pathBox.Text, @"..\"));
+						currentPath = pathBox.Text;
 						MainForm.SendCommand("cd\n" + Path.Combine(pathBox.Text), clientId);
 					}
 				}

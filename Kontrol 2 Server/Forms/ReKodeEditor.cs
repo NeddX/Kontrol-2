@@ -41,8 +41,8 @@ namespace Kontrol_2_Server
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			//rf = new ReferencesForm(clientId, this);
-			//rf.ShowDialog();
+			rf = new ReferencesForm(clientId, this);
+			rf.ShowDialog();
 		}
 
 		private void compileBtn_Click(object sender, EventArgs e)

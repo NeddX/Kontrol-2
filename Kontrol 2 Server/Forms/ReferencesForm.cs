@@ -29,22 +29,31 @@ namespace Kontrol_2_Server
 
 		public void Apppend(string assem)
 		{
-			ListViewItem lv = new ListViewItem(assem);
-			/*if (owner.assemblies.Contains(assem))
-				lv.Checked = true;*/
-			AssemblyList.Items.Add(lv);
+			try
+			{
+				ListViewItem lv = new ListViewItem(assem);
+				if (owner.assemblies.Contains(assem))
+					lv.Checked = true;
+				AssemblyList.Items.Add(lv);
+			} catch { }
 		}
 
-		private void button1_Click(object sender, EventArgs e)
+		private void button1_Click()
 		{
-			/*owner.assemblies = "";
-			for (int i = 0; i < AssemblyList.Items.Count - 1; i++)
+			owner.assemblies = "";
+			foreach (ListViewItem asm in AssemblyList.Items)
 			{
-				if (AssemblyList.Items[i].Checked)
-					owner.assemblies += AssemblyList.Items[i].Text + "@";
+				if (asm.Checked)
+					owner.assemblies += asm.Text + "@";
 			}
-			owner.assemblies = owner.assemblies.Substring(0, owner.assemblies.Length - 1);*/
-			//this.Text = owner.assemblies;
+			if (owner.assemblies != "") owner.assemblies = owner.assemblies.Substring(0, owner.assemblies.Length - 1);
+		}
+
+		private void ReferencesForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			e.Cancel = true;
+			button1_Click();
+			this.Close();
 		}
 	}
 }
