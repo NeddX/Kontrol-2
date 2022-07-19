@@ -281,7 +281,7 @@ namespace Kontrol_2_Server
 						{
 							try
 							{
-								if (fmf.currentPath == resp.Split('#')[1]) fmf.addFileToList(entry.Split('&')[0], entry.Split('&')[1], entry.Split('&')[2], entry.Split('&')[3], entry.Split('&')[4]);
+								if (true) fmf.addFileToList(entry.Split('&')[0], entry.Split('&')[1], entry.Split('&')[2], entry.Split('&')[3], entry.Split('&')[4]);
 								else
 									break;
 							}
