@@ -1065,7 +1065,7 @@ namespace Kontrol_2_Client
 					}
 					else if (fo_mode == 0)
 					{
-						DownloadFile(data);
+						DownloadFile(data, recieved);
 					}
 				}
 			}).Start();
@@ -1440,17 +1440,16 @@ namespace Kontrol_2_Client
 			}
 		}
 
-		public static void DownloadFile(byte[] data)
+		public static void DownloadFile(byte[] data, int count)
 		{
 			Console.Write($"\rRecieved: {data.Length} fo_writeSize: {fo_writeSize} fo_size: {fo_size}");
-			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, data.Length);
+			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, count);
 			fo_writeSize += data.Length;
 			if (fo_writeSize >= fo_size)
 			{
 				using (var fs = File.Create(fo_path))
 				{
-					byte[] dt = fileBuffer;
-					fs.Write(dt, 0, dt.Length);
+					fs.Write(fileBuffer, 0, fileBuffer.Length);
 				}
 				fo_writeSize = 0;
 				fo_size = 0;

@@ -343,7 +343,27 @@ namespace Kontrol_2_Server
 								try
 								{
 									Thread.Sleep(3000);
-									fo_size = SendBytes(File.ReadAllBytes(fo_path), fmf.clientId);
+									fo_size = (int) new FileInfo(fo_path).Length;
+									int max_buffer = 1024 * 1024 * 2;
+									using (var fs = new FileStream(fo_path, FileMode.Open, FileAccess.Read))
+									{
+										byte[] buffer = new byte[max_buffer];
+										int bytesRead = 0;
+										long bytesToRead = fs.Length;
+										while (bytesToRead > 0)
+										{
+											int n = fs.Read(buffer, 0, max_buffer);
+											if (n == 0) break;
+											if (n != buffer.Length)
+												Array.Resize(ref buffer, n);
+
+											SendBytes(buffer, fmf.clientId, 0, n);
+
+											bytesRead += n;
+											bytesToRead -= n;
+										}
+									}
+									// fo_size = SendBytes(File.ReadAllBytes(fo_path), fmf.clientId);
 									GC.Collect();
 									GC.WaitForPendingFinalizers();
 								} 
@@ -571,9 +591,10 @@ namespace Kontrol_2_Server
 				SendCommand(cmd, client);
 			}
 		}
-		public int SendBytes(byte[] data, int targetClient)
+		public int SendBytes(byte[] data, int targetClient, int offset = 0, int size = 0)
 		{
-			int sent = _clientSockets[targetClient].Send(data);
+			if (size == 0) size = data.Length;
+			int sent = _clientSockets[targetClient].Send(data, offset, size, SocketFlags.None);
 			sentBytes = sent;
 			return sent;
 		}
