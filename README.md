@@ -1,5 +1,4 @@
-# Kontrol 2 by Nedd 
-Why Kontrol 2? Cause Kontrol 1 sucked.
+# Kontrol 2 by Nedd. But why Kontrol 2? Cause Kontrol 1 sucked
 Remote Administration Tool written fully in C# and powered by Net 6 with it's awesomeness.
 
 # Features
