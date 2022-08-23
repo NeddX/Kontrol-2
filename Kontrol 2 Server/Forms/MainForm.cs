@@ -26,7 +26,7 @@ namespace Kontrol_2_Server
 		private const int _BUFFER_SIZE = 20971520;
 		private const ushort _PORT = 7878;
 		private static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
-		private static readonly List<Socket> _clientSockets = new List<Socket>();
+		public static readonly List<Socket> _clientSockets = new List<Socket>();
 		private static List<ClientInfo> _clientInfos = new List<ClientInfo>();
 
 		//Form global variables
@@ -759,6 +759,7 @@ namespace Kontrol_2_Server
 				statusCPULabel.Text = "CPU: " + (int)cpuCounter.NextValue() + "%";
 			}
 		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			//e.Cancel = true;

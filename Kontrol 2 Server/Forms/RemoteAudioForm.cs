@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using NAudio;
 using NAudio.Wave;
-using NAudio.Lame;
 
 namespace Kontrol_2_Server
 {
@@ -87,7 +76,8 @@ namespace Kontrol_2_Server
 					}
 					devicesCombo.SelectedIndex = 0;
 					devicesCombo.Enabled = true;
-					devicesCombo.Items.Add("Internal Audio");
+					startButton.Enabled = true;
+					//devicesCombo.Items.Add("Internal Audio");
 				}));
 			}
 			else
@@ -102,7 +92,8 @@ namespace Kontrol_2_Server
 				}
 				devicesCombo.SelectedIndex = 0;
 				devicesCombo.Enabled = true;
-				devicesCombo.Items.Add("Internal Audio");
+				startButton.Enabled = true;
+				//devicesCombo.Items.Add("Internal Audio");
 			}
 		}
 
@@ -119,15 +110,21 @@ namespace Kontrol_2_Server
 					MainForm.SendCommand("remote_audio\nbegin_stream\n" + devicesCombo.SelectedIndex + "\ncapturer", clientId);
 				}
 				devicesCombo.Enabled = false;
+				recButton.Enabled = true;
 				startButton.Text = "Stop";
 				//auStream = true;
 				//WaveRenderer.Start();
 			}
 			else
 			{
-				MainForm.SendCommand("remote_audio\nend_stream", clientId);
 				devicesCombo.Enabled = true;
+				recButton.Enabled = false;
 				startButton.Text = "Start";
+				if (recButton.Text == "Stop recording")
+				{
+					recButton_Click(null, null);
+				}
+				MainForm.SendCommand("remote_audio\nend_stream", clientId);
 				//auStream = false;
 				//WaveRenderer.Stop();
 			}

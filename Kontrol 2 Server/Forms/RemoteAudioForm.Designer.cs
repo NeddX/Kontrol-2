@@ -85,6 +85,7 @@ namespace Kontrol_2_Server
 			// 
 			// recButton
 			// 
+			this.recButton.Enabled = false;
 			this.recButton.Location = new System.Drawing.Point(84, 3);
 			this.recButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.recButton.Name = "recButton";
@@ -96,6 +97,7 @@ namespace Kontrol_2_Server
 			// 
 			// startButton
 			// 
+			this.startButton.Enabled = false;
 			this.startButton.Location = new System.Drawing.Point(4, 3);
 			this.startButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			this.startButton.Name = "startButton";
