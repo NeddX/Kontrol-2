@@ -24,6 +24,6 @@ The format is as follows
 ```
 127.0.0.1;7878;show
 ```
-`127.0.0.1` is where you type the server's IP.
-`7878` is the default port the server operates on.
-`show` shows the console window, `hide` to hide it. 
+- `127.0.0.1` is where you type the server's IP.
+- `7878` is the default port the server operates on.
+- `show` shows the console window, `hide` to hide it. 
