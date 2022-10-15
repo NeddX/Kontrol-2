@@ -13,7 +13,7 @@ Remote Administration Tool written in DotNet C#.
 - More...
 
 # Still in development
-The program is mostly functional but needs polishing. As of now I don't feel like working on it, infact I want to re-write it entirley, will see.
+The program is mostly functional but needs polishing. As of now I don't feel like working on it, infact I want to re-write it entirley.
 
 # Build instruction
 Requires Visual Studio 2019 or higher with DotNet 6 Installed. 
