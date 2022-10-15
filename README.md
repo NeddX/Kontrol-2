@@ -19,3 +19,11 @@ The program is mostly functional but needs polishing. As of now I don't feel lik
 # Build instruction
 Requires Visual Studio 2019 or higher with DotNet 6 Installed. 
 Just open the solution file and hit build, VS will automatically do the rest for you.
+Make sure to have a `conf.t` configuration file in the client's binary folder.
+The format is as follows
+```
+127.0.0.1;7878;show
+```
+`127.0.0.1` is where you type the server's IP.
+`7878` is the default port the server operates on.
+`show` shows the console window, `hide` to hide it. 
