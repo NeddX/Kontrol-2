@@ -9,6 +9,7 @@ Remote Administration Tool written in DotNet C#.
 - Remote Camera
 - Remote Audio/Mic
 - Remote Desktop
+- Compile C# script on the fly
 - Fun Menu (Very fun!!)
 - More...
 
