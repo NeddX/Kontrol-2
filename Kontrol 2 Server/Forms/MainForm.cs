@@ -61,7 +61,7 @@ namespace Kontrol_2_Server
 		{
 			toolStripStatusLabel1.Text = "Status: Starting...";
 			_serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			_serverSocket.Bind(new IPEndPoint(IPAddress.Parse("10.147.17.220"), _PORT));
+			_serverSocket.Bind(new IPEndPoint(IPAddress.Any, _PORT));
 			_serverSocket.Listen(5);
 			_serverSocket.BeginAccept(AcceptCallBack, null);
 			toolStripStatusLabel1.Text = "Status: Online";

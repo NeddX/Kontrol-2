@@ -30,8 +30,8 @@ namespace Kontrol_2_Server
 				btn.FlatAppearance.BorderColor = Color.FromArgb(40, 40, 40);
 				btn.FlatAppearance.BorderSize = 1;
 			}
-			pfc.AddFontFile(@".\data\fonts\UbuntuMono-Regular.ttf");
-			fctb.Font = new Font(pfc.Families[0], 16, FontStyle.Regular, GraphicsUnit.Pixel);
+			//pfc.AddFontFile(@".\data\fonts\UbuntuMono-Regular.ttf");
+			//fctb.Font = new Font(pfc.Families[0], 16, FontStyle.Regular, GraphicsUnit.Pixel);
 		}
 
 		private void ReKodeEditor_Load(object sender, EventArgs e)
