@@ -20,7 +20,7 @@ The program is mostly functional but needs polishing. As of now I don't feel lik
 Requires Visual Studio 2019 or higher with DotNet 6 Installed. 
 Just open the solution file and hit build, VS will automatically do the rest for you.
 Make sure to have a `conf.t` configuration file in the client's binary folder.
-The format is as follows
+The format is as follows:
 ```
 127.0.0.1;7878;show
 ```
