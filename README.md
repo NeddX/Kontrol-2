@@ -10,6 +10,7 @@ Remote Administration Tool written in DotNet C#.
 - Remote Audio/Mic
 - Remote Desktop
 - Fun Menu (Very fun!!)
+- More...
 
 # Still in development
 The program is mostly functional but needs polishing. As of now I don't feel like working on it, infact I want to re-write it entirley, will see.
