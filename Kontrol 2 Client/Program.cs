@@ -455,12 +455,12 @@ namespace Kontrol_2_Client
                                             break;
 										case 0xB1: // Left 
 											SetCursorPos(x, y);
-                                            mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
+                                            if (currentMouseState != MouseState.LEFT_HOLD) mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
                                             currentMouseState = MouseState.LEFT_HOLD;
                                             break;
 										case 0xB2: // Right
                                             SetCursorPos(x, y);
-                                            mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
+                                            if (currentMouseState != MouseState.RIGHT_HOLD) mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
                                             currentMouseState = MouseState.RIGHT_HOLD;
                                             break;
 										case 0xB3: // Middle
@@ -469,6 +469,9 @@ namespace Kontrol_2_Client
 									}
                                     //SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
                                     break;
+								// Keyboard Key press
+								case 0xA1:
+									break;
                             }
                             break;
                     }
