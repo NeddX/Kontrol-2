@@ -157,7 +157,7 @@ namespace Kontrol_2_Server
             this.videoBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.videoBox.Name = "videoBox";
             this.videoBox.Size = new System.Drawing.Size(597, 270);
-            this.videoBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.videoBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.videoBox.TabIndex = 14;
             this.videoBox.TabStop = false;
             this.videoBox.Click += new System.EventHandler(this.videoBox_Click);

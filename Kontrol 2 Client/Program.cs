@@ -428,14 +428,13 @@ namespace Kontrol_2_Client
 									{
 										// No button is held, release!
 										case 0xB0:
+                                            SetCursorPos(x, y);
                                             mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
                                             mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
-											SetCursorPos(x, y);
                                             break;
 										case 0xB1: // Left 
 											SetCursorPos(x, y);
                                             mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
-                                            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
                                             break;
 										case 0xB2: // Right
                                             SetCursorPos(x, y);

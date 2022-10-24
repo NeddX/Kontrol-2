@@ -222,13 +222,6 @@ namespace Kontrol_2_Server
                         break;
                     case MouseButtons.Left:
                         mouseState = 0xB1;
-                        Buffer.BlockCopy(header, 0, data, 0, 3);
-                        data[3] = mouseState;
-                        Buffer.BlockCopy(mousePos[0], 0, data, 4, mousePos[0].Length);
-                        Buffer.BlockCopy(mousePos[1], 0, data, mousePos[0].Length + 4, mousePos[1].Length);
-                        //MainForm.Send(data, clientId);
-
-                        Console.WriteLine($"MState: {mouseState} MX: {relx} MY: {rely}");
                         break;
                     case MouseButtons.Right:
                         mouseState = 0xB2;
@@ -237,7 +230,13 @@ namespace Kontrol_2_Server
                         mouseState = 0xB3;
                         break;
                 }
+                Buffer.BlockCopy(header, 0, data, 0, 3);
+                data[3] = mouseState;
+                Buffer.BlockCopy(mousePos[0], 0, data, 4, mousePos[0].Length);
+                Buffer.BlockCopy(mousePos[1], 0, data, mousePos[0].Length + 4, mousePos[1].Length);
+                MainForm.Send(data, clientId);
 
+                Console.WriteLine($"MState: {mouseState} MX: {relx} MY: {rely}");
             }
         }
 
