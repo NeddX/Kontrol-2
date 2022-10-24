@@ -60,21 +60,25 @@ namespace Kontrol_2_Server
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            if (mouseDrag && e.Button == System.Windows.Forms.MouseButtons.Left)
+            try
             {
-                mouseDrag = false;
-                DrawVerticalLine(startPos.X);
+                if (mouseDrag && e.Button == System.Windows.Forms.MouseButtons.Left)
+                {
+                    mouseDrag = false;
+                    DrawVerticalLine(startPos.X);
 
-                if (mousePos.X == -1) return;
-                DrawVerticalLine(mousePos.X);
+                    if (mousePos.X == -1) return;
+                    DrawVerticalLine(mousePos.X);
 
-                int leftSample = (int)(StartPosition / bytesPerSample + samplesPerPixel * Math.Min(startPos.X, mousePos.X));
-                int rightSample = (int)(StartPosition / bytesPerSample + samplesPerPixel * Math.Max(startPos.X, mousePos.X));
-                Zoom(leftSample, rightSample);
+                    int leftSample = (int)(StartPosition / bytesPerSample + samplesPerPixel * Math.Min(startPos.X, mousePos.X));
+                    int rightSample = (int)(StartPosition / bytesPerSample + samplesPerPixel * Math.Max(startPos.X, mousePos.X));
+                    Zoom(leftSample, rightSample);
+                }
+                else if (e.Button == System.Windows.Forms.MouseButtons.Middle) FitToScreen();
+
+                base.OnMouseUp(e);
             }
-            else if (e.Button == System.Windows.Forms.MouseButtons.Middle) FitToScreen();
-
-            base.OnMouseUp(e);
+            catch { }
         }
 
         private void DrawVerticalLine(int x)

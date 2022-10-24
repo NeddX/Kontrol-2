@@ -43,10 +43,7 @@ namespace Kontrol_2_Server
 			{
 				devicesCombo.Invoke(new MethodInvoker(delegate
 				{
-					foreach (string device in xsplit)
-					{
-						devicesCombo.Items.Add(device);
-					}
+					foreach (string device in xsplit) devicesCombo.Items.Add(device);
 					devicesCombo.SelectedIndex = 0;
 					devicesCombo.Enabled = true;
 				}));
@@ -69,10 +66,7 @@ namespace Kontrol_2_Server
 				devicesCombo.Invoke(new MethodInvoker(delegate
 				{
 					resCombo.Items.Clear();
-					foreach (string res in xsplit)
-					{
-						resCombo.Items.Add(res);
-					}
+					foreach (string res in xsplit) resCombo.Items.Add(res);
 					resCombo.SelectedIndex = 0;
 					resCombo.Enabled = true;
 				}));
@@ -80,10 +74,7 @@ namespace Kontrol_2_Server
 			else
 			{
 				resCombo.Items.Clear();
-				foreach (string res in xsplit)
-				{
-					resCombo.Items.Add(res);
-				}
+				foreach (string res in xsplit) resCombo.Items.Add(res);
 				resCombo.SelectedIndex = 0;
 				resCombo.Enabled = true;
 			}
@@ -92,7 +83,7 @@ namespace Kontrol_2_Server
 		{
 			if (wcStream)
 			{
-				videoBox.Image = (Bitmap)Image.FromStream(new MemoryStream(imageBytes));
+				videoBox.Image = (Bitmap) Image.FromStream(new MemoryStream(imageBytes));
 				/*if (this.InvokeRequired)
 				{
 					videoBox.Invoke(new MethodInvoker(delegate
@@ -140,26 +131,22 @@ namespace Kontrol_2_Server
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			if (spath == null)
-			{
-				SaveFileDialog sfd = new SaveFileDialog();
-				if (sfd.ShowDialog() == DialogResult.OK)
-				{
-					spath = sfd.FileName;
-					videoBox.Image.Save(spath, ImageFormat.Jpeg);
-				}
-			}
-			else
-			{
-				videoBox.Image.Save(spath, ImageFormat.Jpeg);
-			}
-		}
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.AddExtension = true;
+            sfd.DefaultExt = ".jpg";
+            sfd.FileName = "Snapshot " + DateTime.Now.ToFileTime();
+            sfd.Filter = "JPEG Image File (*.jpg, *.jpeg)|*.jpg;*.jpeg";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                spath = sfd.FileName;
+                videoBox.Image.Save(spath, ImageFormat.Jpeg);
+            }
+        }
 
 		private void RemoteCamForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			MainForm.rcf = new RemoteCamForm();
-			if(wcStream)
-				MainForm.SendCommand("remote_webcam\nend_stream", clientId);
+			if(wcStream) MainForm.SendCommand("remote_webcam\nend_stream", clientId);
 		}
 
 		private void devicesCombo_SelectedIndexChanged(object sender, EventArgs e)

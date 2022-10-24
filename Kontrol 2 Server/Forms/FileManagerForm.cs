@@ -59,15 +59,18 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
-				files = 0;
-				folders = 0;
-				filesList.Items.Clear();
-				currentDirectoryFiles.Clear();
+				this.Invoke(new MethodInvoker(delegate
+                {
+                    MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
+                    files = 0;
+                    folders = 0;
+                    filesList.Items.Clear();
+                    currentDirectoryFiles.Clear();
+                }));
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				if (this.InvokeRequired)
 				{
 					this.Invoke(new MethodInvoker(delegate 
@@ -218,7 +221,7 @@ namespace Kontrol_2_Server
 				long number = int.Parse(snumber);
 				string type = " GB";
 				string rer = "";
-				long size = (number / (1024 * 1024 * 1024)); //why doesn't 1024 ^ 3 work????
+				long size = (number / (1024 * 1024 * 1024)); 
 				if (size < 1) //check if the size (in gbs) is lesser than one
 				{
 					size = (number / (1024 * 1024)); //if yes then convert to mbs
@@ -301,15 +304,19 @@ namespace Kontrol_2_Server
 					{
 						try
 						{
-							pathBox.Text = Path.Combine(pathBox.Text, currentDirectoryFiles[filesList.SelectedIndices[0]]);
-							currentPath = pathBox.Text;
-							MainForm.SendCommand("cd\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
-							filesList.Items.Clear();
-							currentDirectoryFiles.Clear();
+
+							this.Invoke(new MethodInvoker(delegate
+							{
+								pathBox.Text = Path.Combine(pathBox.Text, currentDirectoryFiles[filesList.SelectedIndices[0]]);
+								currentPath = pathBox.Text;
+								MainForm.SendCommand("cd\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
+								filesList.Items.Clear();
+								currentDirectoryFiles.Clear();
+							}));
 						}
-						catch (Exception)
+						catch (Exception ex)
 						{
-							MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+							MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 							this.Close();
 						}
 					}
@@ -321,14 +328,18 @@ namespace Kontrol_2_Server
 					{
 						try
 						{
-							pathBox.Text = Path.Combine(pathBox.Text, filesList.FocusedItem.Text);
-							currentPath = pathBox.Text;
-							MainForm.SendCommand("cd\n" + filesList.FocusedItem.Text, clientId);
-							filesList.Items.Clear();
+
+							this.Invoke(new MethodInvoker(delegate
+							{
+								pathBox.Text = Path.Combine(pathBox.Text, filesList.FocusedItem.Text);
+								currentPath = pathBox.Text;
+								MainForm.SendCommand("cd\n" + filesList.FocusedItem.Text, clientId);
+								filesList.Items.Clear();
+							}));
 						}
-						catch (Exception)
+						catch (Exception ex)
 						{
-							MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+							MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 							this.Close();
 						}
 					}
@@ -342,19 +353,23 @@ namespace Kontrol_2_Server
 			{
 				try
 				{
-					filesList.Items.Clear();
-					currentDirectoryFiles.Clear();
-					if (!string.IsNullOrEmpty(pathBox.Text))
+
+					this.Invoke(new MethodInvoker(delegate
 					{
-						MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
-						currentPath = pathBox.Text;
-					}
-					else
-						MainForm.SendCommand("list_drives", clientId);
+						filesList.Items.Clear();
+						currentDirectoryFiles.Clear();
+						if (!string.IsNullOrEmpty(pathBox.Text))
+						{
+							MainForm.SendCommand("cd\n" + pathBox.Text, clientId);
+							currentPath = pathBox.Text;
+						}
+						else
+							MainForm.SendCommand("list_drives", clientId);
+					}));
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					this.Close();
 				}
 			}
@@ -363,26 +378,30 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				files = 0;
-				folders = 0;
-				if (!string.IsNullOrEmpty(pathBox.Text) && !string.IsNullOrWhiteSpace(pathBox.Text)) //check if current path is not empty or null or some other bs
+
+				this.Invoke(new MethodInvoker(delegate
 				{
-					filesList.Items.Clear();
-					currentDirectoryFiles.Clear(); 
-					MainForm.SendCommand("cd\n" + Path.Combine(prev_dir), clientId);
-					pathBox.Text = prev_dir;
-					currentPath = pathBox.Text;
-				}
-				else
-				{
-					filesList.Items.Clear();
-					currentDirectoryFiles.Clear();
-					MainForm.SendCommand("list_drives", clientId);
-				}
+					files = 0;
+					folders = 0;
+					if (!string.IsNullOrEmpty(pathBox.Text) && !string.IsNullOrWhiteSpace(pathBox.Text)) //check if current path is not empty or null or some other bs
+					{
+						filesList.Items.Clear();
+						currentDirectoryFiles.Clear();
+						MainForm.SendCommand("cd\n" + Path.Combine(prev_dir), clientId);
+						pathBox.Text = prev_dir;
+						currentPath = pathBox.Text;
+					}
+					else
+					{
+						filesList.Items.Clear();
+						currentDirectoryFiles.Clear();
+						MainForm.SendCommand("list_drives", clientId);
+					}
+				}));
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				this.Close();
 			}
 		}
@@ -391,32 +410,36 @@ namespace Kontrol_2_Server
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(pathBox.Text) && !string.IsNullOrWhiteSpace(pathBox.Text)) //check if current path is not empty or null or some other bs
+
+				this.Invoke(new MethodInvoker(delegate
 				{
-					files = 0;
-					folders = 0;
-					filesList.Items.Clear();
-					currentDirectoryFiles.Clear();
-					DirectoryInfo d = new DirectoryInfo(pathBox.Text);
-					if (d.Parent == null) //is root
+					if (!string.IsNullOrEmpty(pathBox.Text) && !string.IsNullOrWhiteSpace(pathBox.Text)) //check if current path is not empty or null or some other bs
 					{
-						rootTree.Nodes[0].Nodes.Clear();
-						MainForm.SendCommand("list_drives", clientId);
-						pathBox.Text = "";
-						currentPath = "";
+						files = 0;
+						folders = 0;
+						filesList.Items.Clear();
+						currentDirectoryFiles.Clear();
+						DirectoryInfo d = new DirectoryInfo(pathBox.Text);
+						if (d.Parent == null) //is root
+						{
+							rootTree.Nodes[0].Nodes.Clear();
+							MainForm.SendCommand("list_drives", clientId);
+							pathBox.Text = "";
+							currentPath = "";
+						}
+						else
+						{
+							prev_dir = pathBox.Text;
+							pathBox.Text = Path.GetFullPath(Path.Combine(pathBox.Text, @"..\"));
+							currentPath = pathBox.Text;
+							MainForm.SendCommand("cd\n" + Path.Combine(pathBox.Text), clientId);
+						}
 					}
-					else
-					{
-						prev_dir = pathBox.Text;
-						pathBox.Text = Path.GetFullPath(Path.Combine(pathBox.Text, @"..\"));
-						currentPath = pathBox.Text;
-						MainForm.SendCommand("cd\n" + Path.Combine(pathBox.Text), clientId);
-					}
-				}
+				}));
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				this.Close();
 			}
 		}
@@ -430,9 +453,9 @@ namespace Kontrol_2_Server
 					MainForm.SendCommand("file_operation\nfile_delete\n" + currentDirectoryFiles[filesList.SelectedIndices[0]], clientId);
 				}
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				this.Close();
 			}
 		}
@@ -579,7 +602,7 @@ namespace Kontrol_2_Server
 						MainForm.fo_path = fd.FileName;
 					}
 				}
-				catch (Exception)
+				catch
 				{
 					this.Close();
 				}
@@ -596,7 +619,7 @@ namespace Kontrol_2_Server
 						MainForm.SendCommand("file_operation\nfile_download\n" + pathBox.Text + "\n" + Path.GetFileName(fd.FileName) + "\n" + new FileInfo(fd.FileName).Length, clientId);
 					}
 				}
-				catch (Exception)
+				catch
 				{
 					this.Close();
 				}
@@ -695,6 +718,26 @@ namespace Kontrol_2_Server
 					pb.Value = (int)Math.Round(value);
 			} catch { }
 		}
+
+		private void wallpaperToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+            if (filesList.SelectedIndices.Count > 0)
+            {
+                byte mode;
+                var prompt = new WallpaperPrompt();
+				prompt.ShowDialog();
+				mode = prompt.mode;
+				prompt.Dispose();
+                try
+                {
+                    MainForm.SendCommand($"system_setWallpaper\n{currentDirectoryFiles[filesList.SelectedIndices[0]]}\n{mode}", clientId);
+                }
+                catch
+                {
+
+                }
+            }
+        }
 	}
 
 	public static class ControlExtensions //reduce listview flickering

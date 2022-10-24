@@ -8,17 +8,19 @@ namespace Kontrol_2_Server
 {
     public partial class RemoteDesktopForm : Form
     {
-        private long frames = 0;
-        private double seconds = 0;
+        long frames = 0;
+        double seconds = 0;
+        bool isHovering = false;
         public int clientId = 0;
         public int[] screenResolution = { 0, 0 };
         public RemoteDesktopForm()
         {
             InitializeComponent();
             resCombo.SelectedIndex = 5;
+            moueTimer.Start();
         }
 
-		private void startButton_Click(object sender, System.EventArgs e)
+		void startButton_Click(object sender, System.EventArgs e)
 		{
             if (startButton.Text == "Start")
             {
@@ -42,14 +44,14 @@ namespace Kontrol_2_Server
             frames++;
         }
 
-		private void RemoteDesktopForm_FormClosing(object sender, FormClosingEventArgs e)
+		void RemoteDesktopForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
             MainForm.rdf = new RemoteDesktopForm();
             if (startButton.Text == "Stop")
                 MainForm.SendCommand("remote_desktop\nend_stream", clientId);
         }
 
-		private void qualityBox_TextChanged(object sender, System.EventArgs e)
+		void qualityBox_TextChanged(object sender, System.EventArgs e)
 		{
             int temp;
             if (qualityBox.Text == string.Empty)
@@ -72,14 +74,15 @@ namespace Kontrol_2_Server
 			}
 		}
 
-		private void mouseCheck_CheckedChanged(object sender, System.EventArgs e)
+		void mouseCheck_CheckedChanged(object sender, System.EventArgs e)
 		{
 
 		}
 
-		private void videoBox_MouseMove(object sender, MouseEventArgs e)
+		void videoBox_MouseMove(object sender, MouseEventArgs e)
         {
-            if (screenResolution[0] > 0 && screenResolution[1] > 0 && mouseCheck.Checked && startButton.Text == "Stop")
+
+            /*if (screenResolution[0] > 0 && screenResolution[1] > 0 && mouseCheck.Checked && startButton.Text == "Stop")
             {
 				int x = videoBox.PointToClient(Cursor.Position).X;
 				int y = videoBox.PointToClient(Cursor.Position).Y;
@@ -89,13 +92,14 @@ namespace Kontrol_2_Server
 				//screenResolution[0], screenResolution[1], x, y, videoBox.Width, videoBox.Height, relx, rely);
 				MainForm.SendCommand("remote_desktop\nsmcord\n" + relx.ToString() + "\n" + rely.ToString(), clientId);
 				Thread.Sleep(70); //let's be friendly to the network bandwidth :)
-			}
+			}*/
         }
 
-        private void videoBox_Click(object sender, System.EventArgs e)
+        void videoBox_Click(object sender, System.EventArgs e)
         {
-            if (screenResolution[0] > 0 && screenResolution[1] > 0 && mouseCheck.Checked && startButton.Text == "Stop")
+            /*if (screenResolution[0] > 0 && screenResolution[1] > 0 && mouseCheck.Checked && startButton.Text == "Stop")
             {
+                videoBox.Focus();
                 int x = videoBox.PointToClient(Cursor.Position).X;
                 int y = videoBox.PointToClient(Cursor.Position).Y;
                 double relx = (x * screenResolution[0]) / videoBox.Width;
@@ -116,14 +120,14 @@ namespace Kontrol_2_Server
 				}
                 //this.Text = string.Format("screenResolution: {0}x{1} videoBox Client X: {2} videoBox Client Y: {3} videoBox Size: {4}x{5} Relative X: {6} Relative Y: {7}",
                 //screenResolution[0], screenResolution[1], x, y, videoBox.Width, videoBox.Height, relx, rely);
-            }
+            }*/
         }
 
-        private void RemoteDesktopForm_KeyDown(object sender, KeyEventArgs e)
+        void RemoteDesktopForm_KeyDown(object sender, KeyEventArgs e)
 		{
             
         }
-        private void RemoteDesktopForm_KeyPress(object sender, KeyPressEventArgs e)
+        void RemoteDesktopForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (keyboardCheck.Checked && startButton.Text == "Stop")
             {
@@ -168,11 +172,11 @@ namespace Kontrol_2_Server
                 {
                     this.Text = e.KeyChar.ToString();
                 }
-                //MainForm.SendCommand("remote_desktop\nkpress\n" + "{" + key + "}", clientId);
+                MainForm.SendCommand("remote_desktop\nkpress\n" + "{" + key + "}", clientId);
             }
         }
 
-        private void fpsCounter_Tick(object sender, EventArgs e)
+        void fpsCounter_Tick(object sender, EventArgs e)
 		{
             seconds += 0.1;
             try
@@ -181,5 +185,70 @@ namespace Kontrol_2_Server
             }
             catch { }
 		}
-	}
+
+        void keyboardCheck_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        void moueTimer_Tick(object sender, EventArgs e)
+        {
+            if (screenResolution[0] > 0 
+                && screenResolution[1] > 0 
+                && mouseCheck.Checked 
+                && startButton.Text == "Stop" 
+                && isHovering)
+            {
+                MouseButtons mButtonState = Control.MouseButtons;
+
+                int x = videoBox.PointToClient(Cursor.Position).X;
+                int y = videoBox.PointToClient(Cursor.Position).Y;
+                int relx = (x * screenResolution[0]) / videoBox.Width;
+                int rely = (y * screenResolution[1]) / videoBox.Height;
+
+                byte[] header = { 0xFE, 0xF1, 0xA0 };
+                byte[][] mousePos = 
+                { 
+                    BitConverter.GetBytes(relx), 
+                    BitConverter.GetBytes(rely)
+                };
+                byte mouseState = 0xB0;
+                byte[] data = new byte[mousePos[0].Length + mousePos[1].Length + 4];
+
+                switch (mButtonState)
+                {
+                    case MouseButtons.None:
+                        mouseState = 0xB0;
+                        break;
+                    case MouseButtons.Left:
+                        mouseState = 0xB1;
+                        Buffer.BlockCopy(header, 0, data, 0, 3);
+                        data[3] = mouseState;
+                        Buffer.BlockCopy(mousePos[0], 0, data, 4, mousePos[0].Length);
+                        Buffer.BlockCopy(mousePos[1], 0, data, mousePos[0].Length + 4, mousePos[1].Length);
+                        //MainForm.Send(data, clientId);
+
+                        Console.WriteLine($"MState: {mouseState} MX: {relx} MY: {rely}");
+                        break;
+                    case MouseButtons.Right:
+                        mouseState = 0xB2;
+                        break;
+                    case MouseButtons.Middle:
+                        mouseState = 0xB3;
+                        break;
+                }
+
+            }
+        }
+
+        void videoBox_MouseEnter(object sender, EventArgs e)
+        {
+            isHovering = true;
+        }
+
+        private void videoBox_MouseLeave(object sender, EventArgs e)
+        {
+            isHovering = false;
+        }
+    }
 }

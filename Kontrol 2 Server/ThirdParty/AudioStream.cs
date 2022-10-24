@@ -1,7 +1,8 @@
 ﻿using NAudio.Wave;
 
-namespace Kontrol_2_Server
+namespace Kontrol_2_Server.ThirdParty
 {
+    // I dont remember where i stole this from but i will put the link here once i do
     public class AudioStream
     {
         /// <summary>

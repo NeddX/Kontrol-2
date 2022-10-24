@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <RootNamespace>Kontrol_2_Server</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
@@ -13,15 +13,17 @@
     <RestoreFallbackFolders>clear</RestoreFallbackFolders>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishTrimmed>false</PublishTrimmed>
+    <AssemblyName>k2s</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AForge.Controls" Version="2.2.5" />
-    <PackageReference Include="AForge.NetStandard" Version="2.2.5" />
+    <PackageReference Include="AForge.NetStandard" Version="2.2.6.1" />
     <PackageReference Include="AForge.Video" Version="2.2.5" />
+    <PackageReference Include="dnlib-new" Version="2.1.0" />
     <PackageReference Include="FCTB" Version="2.16.24" />
     <PackageReference Include="FFMediaToolkit" Version="4.4.1" />
-    <PackageReference Include="FFmpeg.AutoGen" Version="5.0.0" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="5.1.1" />
     <PackageReference Include="FFmpeg.Nightly" Version="20200831.1.0" />
     <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-preview.6.22324.4" />
     <PackageReference Include="NAudio" Version="2.1.0" />

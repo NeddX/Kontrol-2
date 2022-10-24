@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Reflection;
 
 namespace Kontrol_2_Server
 {
@@ -55,7 +46,11 @@ namespace Kontrol_2_Server
 			{
 				new Thread(() => 
 				{
-					MainForm.SendCommand("list_proceses", clientId);
+					try
+                    {
+                        MainForm.SendCommand("list_proceses", clientId);
+                    }
+					catch { MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error); this.Close(); }
 				}).Start();
 			}
 			catch (Exception)
@@ -72,9 +67,13 @@ namespace Kontrol_2_Server
 			try
 			{
 				new Thread(() =>
-				{
-					MainForm.SendCommand("list_proceses", clientId);
-				}).Start();
+                {
+                    try
+                    {
+                        MainForm.SendCommand("list_proceses", clientId);
+                    }
+                    catch { MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error); this.Close(); }
+                }).Start();
 			}
 			catch (Exception)
 			{
@@ -99,8 +98,12 @@ namespace Kontrol_2_Server
 			{
 				new Thread(() =>
 				{
-					MainForm.SendCommand("list_proceses", clientId);
-				}).Start();
+					try
+                    {
+                        MainForm.SendCommand("list_proceses", clientId);
+                    }
+                    catch { MessageBox.Show("Error: Connection lost.", "Socket Exception occured", MessageBoxButtons.OK, MessageBoxIcon.Error); this.Close(); }
+        }).Start();
 			}
 			catch (Exception)
 			{
@@ -113,7 +116,8 @@ namespace Kontrol_2_Server
 		{
 			UpdateList.Stop();
 			MainForm.pmf = new ProcessForm();
-		}
+            this.Dispose();
+        }
 
 		private void killToolStripMenuItem_Click(object sender, EventArgs e)
 		{

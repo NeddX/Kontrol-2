@@ -13,8 +13,9 @@ namespace Kontrol_2_Server
 		/// </summary>
 		[STAThread]
 		static void Main()
-		{
-			Application.SetHighDpiMode(HighDpiMode.SystemAware);
+        {
+            Console.SetWindowSize(50, 10);
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new MainForm());
