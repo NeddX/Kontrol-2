@@ -30,8 +30,6 @@ using System.Runtime.ExceptionServices;
 using System.Reflection.Emit;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
-
-
 #endregion
 
 [assembly: log4net.Config.XmlConfigurator(Watch = true)]
@@ -432,7 +430,7 @@ namespace Kontrol_2_Client
 										case 0xB0:
                                             mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
                                             mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
-											//SetCursorPos(x, y);
+											SetCursorPos(x, y);
                                             break;
 										case 0xB1: // Left 
 											SetCursorPos(x, y);

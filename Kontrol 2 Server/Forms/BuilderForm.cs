@@ -3,12 +3,9 @@ using dnlib.DotNet.Emit;
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using static System.Net.WebRequestMethods;
 using File = System.IO.File;
-using FileAttributes = System.IO.FileAttributes;
 
 namespace Kontrol_2_Server
 {
@@ -33,7 +30,7 @@ namespace Kontrol_2_Server
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 var prog = new ProgressBarForm("Building...", "Decompressing...");
-                new Thread (() => { prog.ShowDialog(); }).Start();
+                new Thread(() => { prog.ShowDialog(); }).Start();
                 //this.Enabled = false;
 
                 // Cleaning the directory
