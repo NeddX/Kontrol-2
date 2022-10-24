@@ -222,7 +222,7 @@ namespace Kontrol_2_Server
             // 
             // moueTimer
             // 
-            this.moueTimer.Interval = 10;
+            this.moueTimer.Interval = 50;
             this.moueTimer.Tick += new System.EventHandler(this.moueTimer_Tick);
             // 
             // RemoteDesktopForm

@@ -441,8 +441,15 @@ namespace Kontrol_2_Client
                                             SetCursorPos(x, y);
 											if (currentMouseState != MouseState.IDLE)
                                             {
-                                                mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
-                                                mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+												switch (currentMouseState)
+												{
+													case MouseState.LEFT_HOLD:
+                                                        mouse_event(MOUSEEVENTF_LEFTUP, x, y, 0, 0);
+                                                        break;
+													case MouseState.RIGHT_HOLD:
+                                                        mouse_event(MOUSEEVENTF_RIGHTUP, x, y, 0, 0);
+														break;
+                                                }
 												currentMouseState = MouseState.IDLE;
                                             }
                                             break;
