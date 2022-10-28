@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -13,6 +14,8 @@ namespace Kontrol_2_Server
         bool isHovering = false;
         public int clientId = 0;
         public int[] screenResolution = { 0, 0 };
+        string recPath = string.Empty;
+        MemoryStream recStream = new MemoryStream();
         public RemoteDesktopForm()
         {
             InitializeComponent();
@@ -40,7 +43,8 @@ namespace Kontrol_2_Server
 
         public void processImage(byte[] imageBytes)
 		{
-            videoBox.Image = (Bitmap)Image.FromStream(new MemoryStream(imageBytes));
+            videoBox.Image = (Bitmap) Image.FromStream(new MemoryStream(imageBytes));
+            if (recPath != string.Empty) recStream.Write(imageBytes, 0, imageBytes.Length);
             frames++;
         }
 
@@ -133,10 +137,7 @@ namespace Kontrol_2_Server
             {
                 int temp;
                 string key = e.KeyChar.ToString();
-                if (key.StartsWith("D") && key.Length > 1)
-                {
-                    if (int.TryParse(key[1].ToString(), out temp)) key = key.Substring(1);
-                }
+                if (key.StartsWith("D") && key.Length > 1) if (int.TryParse(key[1].ToString(), out temp)) key = key.Substring(1);
                 switch (key.ToLower())
                 {
                     case "back":
@@ -164,15 +165,11 @@ namespace Kontrol_2_Server
                         key = "%";
                         break;
                 }
-                if (Char.IsControl(e.KeyChar))
-				{
-                    this.Text = "IT IS E CONTROLLL!!!";
-				}
-                else
-                {
-                    this.Text = e.KeyChar.ToString();
-                }
-                MainForm.SendCommand("remote_desktop\nkpress\n" + "{" + key + "}", clientId);
+                if (Char.IsControl(e.KeyChar)) this.Text = "IT IS E CONTROLLL!!!";
+                else this.Text = e.KeyChar.ToString();
+
+                Console.WriteLine($"Keydown: {key}");
+                //MainForm.SendCommand("remote_desktop\nkpress\n" + "{" + key + "}", clientId);
             }
         }
 
@@ -191,12 +188,12 @@ namespace Kontrol_2_Server
 
         }
 
-        void moueTimer_Tick(object sender, EventArgs e)
+        void UpdateMouseStateToClient()
         {
-            if (screenResolution[0] > 0 
-                && screenResolution[1] > 0 
-                && mouseCheck.Checked 
-                && startButton.Text == "Stop" 
+            if (screenResolution[0] > 0
+                && screenResolution[1] > 0
+                && mouseCheck.Checked
+                && startButton.Text == "Stop"
                 && isHovering)
             {
                 MouseButtons mButtonState = Control.MouseButtons;
@@ -207,9 +204,9 @@ namespace Kontrol_2_Server
                 int rely = (y * screenResolution[1]) / videoBox.Height;
 
                 byte[] header = { 0xFE, 0xF1, 0xA0 };
-                byte[][] mousePos = 
-                { 
-                    BitConverter.GetBytes(relx), 
+                byte[][] mousePos =
+                {
+                    BitConverter.GetBytes(relx),
                     BitConverter.GetBytes(rely)
                 };
                 byte mouseState = 0xB0;
@@ -235,9 +232,12 @@ namespace Kontrol_2_Server
                 Buffer.BlockCopy(mousePos[0], 0, data, 4, mousePos[0].Length);
                 Buffer.BlockCopy(mousePos[1], 0, data, mousePos[0].Length + 4, mousePos[1].Length);
                 MainForm.Send(data, clientId);
-
-                Console.WriteLine($"MState: {mouseState} MX: {relx} MY: {rely}");
             }
+        }
+
+        void moueTimer_Tick(object sender, EventArgs e)
+        {
+            UpdateMouseStateToClient();
         }
 
         void videoBox_MouseEnter(object sender, EventArgs e)
@@ -248,6 +248,36 @@ namespace Kontrol_2_Server
         private void videoBox_MouseLeave(object sender, EventArgs e)
         {
             isHovering = false;
+        }
+
+        private void recButton_Click(object sender, EventArgs e)
+        {
+            if (recButton.Text == "Record")
+            {
+                SaveFileDialog fd = new SaveFileDialog();
+                fd.AddExtension = true;
+                fd.DefaultExt = ".mkv";
+                fd.Filter = "MKV Video File | *.mkv";
+                fd.Title = "MKV Video File location.";
+                if (fd.ShowDialog() == DialogResult.OK)
+                {
+                    if (string.IsNullOrEmpty(fd.FileName) || string.IsNullOrWhiteSpace(fd.FileName)) return;
+                    recPath = fd.FileName;
+                }
+                recButton.Text = "Stop recording";
+            }
+            else
+            {
+                recStream.Position = 0;
+                File.WriteAllBytes(recPath, recStream.ToArray());
+                //var waveStream = new RawSourceWaveStream(recStream, waveFormat);
+                //WaveFileWriter.CreateWaveFile(recPath, waveStream);
+                recStream.Dispose();
+                recStream.Close();
+                recStream = new MemoryStream();
+                recPath = null;
+                recButton.Text = "Record";
+            }
         }
     }
 }

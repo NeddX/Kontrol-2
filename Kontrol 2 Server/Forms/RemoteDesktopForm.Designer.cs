@@ -196,7 +196,6 @@ namespace Kontrol_2_Server
             // 
             // recButton
             // 
-            this.recButton.Enabled = false;
             this.recButton.Location = new System.Drawing.Point(85, 3);
             this.recButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.recButton.Name = "recButton";
@@ -204,6 +203,7 @@ namespace Kontrol_2_Server
             this.recButton.TabIndex = 7;
             this.recButton.Text = "Record";
             this.recButton.UseVisualStyleBackColor = true;
+            this.recButton.Click += new System.EventHandler(this.recButton_Click);
             // 
             // startButton
             // 

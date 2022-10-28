@@ -1,7 +1,4 @@
-﻿using FFMediaToolkit;
-using FFMediaToolkit.Encoding;
-using FFMediaToolkit.Graphics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -167,26 +164,6 @@ namespace Kontrol_2_Server
 						recButton.Text = "Stop Recording";
 					}
 				}
-			}
-			else
-			{
-				FFmpegLoader.FFmpegPath = @".\data\ffmpeg-gpl-shared\bin";
-				recButton.Text = "Record";
-				var settings = new VideoEncoderSettings(width: 960, height: 544, framerate: 30, codec: VideoCodec.H264);
-				settings.EncoderPreset = EncoderPreset.Fast;
-				settings.CRF = 17;
-				var file = MediaBuilder.CreateContainer(rpath).WithVideo(settings).Create();
-				foreach (byte[] imageBytes in imagesList)
-				{
-					var memStream = new MemoryStream(imageBytes);
-					var bitmap = (Bitmap)Bitmap.FromStream(memStream);
-					var rect = new System.Drawing.Rectangle(System.Drawing.Point.Empty, bitmap.Size);
-					var bitLock = bitmap.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-					var bitmapData = ImageData.FromPointer(bitLock.Scan0, ImagePixelFormat.Bgr24, bitmap.Size);
-					file.Video.AddFrame(bitmapData); // Encode the frame
-					bitmap.UnlockBits(bitLock);
-				}
-				file.Dispose();
 			}
 		}
 		private void videoEncoder_Tick(object sender, EventArgs e)

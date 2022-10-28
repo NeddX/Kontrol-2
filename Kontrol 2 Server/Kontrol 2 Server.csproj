@@ -17,18 +17,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Accord.Video.FFMPEG" Version="3.8.0" />
     <PackageReference Include="AForge.Controls" Version="2.2.5" />
     <PackageReference Include="AForge.NetStandard" Version="2.2.6.1" />
     <PackageReference Include="AForge.Video" Version="2.2.5" />
     <PackageReference Include="dnlib-new" Version="2.1.0" />
     <PackageReference Include="FCTB" Version="2.16.24" />
-    <PackageReference Include="FFMediaToolkit" Version="4.4.1" />
-    <PackageReference Include="FFmpeg.AutoGen" Version="5.1.1" />
-    <PackageReference Include="FFmpeg.Nightly" Version="20200831.1.0" />
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="7.0.0-preview.6.22324.4" />
     <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="7.0.0-preview.6.22324.4" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ namespace Kontrol_2_Server
     public partial class RemoteAudioForm : Form
     {
         public int clientId = 0;
-        private string recPath = null;
+        private string recPath = string.Empty;
         private AudioStream stream = new AudioStream();
         private MemoryStream recStream = new MemoryStream();
         private WaveFormat waveFormat = new WaveFormat();
@@ -47,7 +47,7 @@ namespace Kontrol_2_Server
                 stream.BufferPlay(audioBytes);
                 waveViewer.WaveStream = new RawSourceWaveStream(ms, waveFormat);
                 waveViewer.FitToScreen();
-                if (recPath != null) recStream.Write(audioBytes, 0, audioBytes.Length);
+                if (recPath != string.Empty) recStream.Write(audioBytes, 0, audioBytes.Length);
             }
             catch { }
         }
@@ -128,7 +128,7 @@ namespace Kontrol_2_Server
                 recStream.Dispose();
                 recStream.Close();
                 recStream = new MemoryStream();
-                recPath = null;
+                recPath = string.Empty;
                 recButton.Text = "Record";
             }
         }

@@ -431,8 +431,6 @@ namespace Kontrol_2_Client
 									int x = BitConverter.ToInt32(xBytes);
 									int y = BitConverter.ToInt32(yBytes);
 
-									Console.WriteLine($"MState: {recBuf[3]} MX: {x} MY: {y}");
-
 									// Mouse Button State
 									switch (recBuf[3])
 									{
