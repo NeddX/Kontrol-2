@@ -238,7 +238,6 @@ namespace Kontrol_2_Server
             this.Text = "Kontrol 2 - Remote Desktop";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RemoteDesktopForm_FormClosing);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.RemoteDesktopForm_KeyDown);
-            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.RemoteDesktopForm_KeyPress);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.videoBox)).EndInit();

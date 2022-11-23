@@ -91,6 +91,7 @@ namespace Kontrol_2_Server
             this.notifyStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.showToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fullInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainTab.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.listViewStrip.SuspendLayout();
@@ -384,7 +385,8 @@ namespace Kontrol_2_Server
             this.restartToolStripMenuItem,
             this.uninstallToolStripMenuItem,
             this.showLocationToolStripMenuItem,
-            this.reloadToolStripMenuItem});
+            this.reloadToolStripMenuItem,
+            this.fullInfoToolStripMenuItem});
             this.manageClientToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.shell32_16826;
             this.manageClientToolStripMenuItem.Name = "manageClientToolStripMenuItem";
             this.manageClientToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
@@ -394,7 +396,7 @@ namespace Kontrol_2_Server
             // 
             this.exitToolStripMenuItem1.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1027;
             this.exitToolStripMenuItem1.Name = "exitToolStripMenuItem1";
-            this.exitToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem1.Text = "Exit";
             this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem1_Click);
             // 
@@ -402,7 +404,7 @@ namespace Kontrol_2_Server
             // 
             this.shutdownToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_1008;
             this.shutdownToolStripMenuItem.Name = "shutdownToolStripMenuItem";
-            this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.shutdownToolStripMenuItem.Text = "Shutdown";
             this.shutdownToolStripMenuItem.Click += new System.EventHandler(this.shutdownToolStripMenuItem_Click);
             // 
@@ -410,7 +412,7 @@ namespace Kontrol_2_Server
             // 
             this.sleepToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_10081;
             this.sleepToolStripMenuItem.Name = "sleepToolStripMenuItem";
-            this.sleepToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sleepToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.sleepToolStripMenuItem.Text = "Sleep";
             this.sleepToolStripMenuItem.Click += new System.EventHandler(this.sleepToolStripMenuItem_Click);
             // 
@@ -418,7 +420,7 @@ namespace Kontrol_2_Server
             // 
             this.restartToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5311;
             this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-            this.restartToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.restartToolStripMenuItem.Text = "Restart";
             this.restartToolStripMenuItem.Click += new System.EventHandler(this.restartToolStripMenuItem_Click);
             // 
@@ -426,7 +428,7 @@ namespace Kontrol_2_Server
             // 
             this.uninstallToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_54;
             this.uninstallToolStripMenuItem.Name = "uninstallToolStripMenuItem";
-            this.uninstallToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.uninstallToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.uninstallToolStripMenuItem.Text = "Uninstall";
             this.uninstallToolStripMenuItem.Click += new System.EventHandler(this.uninstallToolStripMenuItem_Click);
             // 
@@ -434,7 +436,7 @@ namespace Kontrol_2_Server
             // 
             this.showLocationToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_18;
             this.showLocationToolStripMenuItem.Name = "showLocationToolStripMenuItem";
-            this.showLocationToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.showLocationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showLocationToolStripMenuItem.Text = "Show Location";
             this.showLocationToolStripMenuItem.Click += new System.EventHandler(this.showLocationToolStripMenuItem_Click);
             // 
@@ -442,7 +444,7 @@ namespace Kontrol_2_Server
             // 
             this.reloadToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_5311;
             this.reloadToolStripMenuItem.Name = "reloadToolStripMenuItem";
-            this.reloadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.reloadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.reloadToolStripMenuItem.Text = "Reload";
             this.reloadToolStripMenuItem.Click += new System.EventHandler(this.reloadToolStripMenuItem_Click);
             // 
@@ -613,6 +615,13 @@ namespace Kontrol_2_Server
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
+            // fullInfoToolStripMenuItem
+            // 
+            this.fullInfoToolStripMenuItem.Image = global::Kontrol_2_Server.Properties.Resources.imageres_81;
+            this.fullInfoToolStripMenuItem.Name = "fullInfoToolStripMenuItem";
+            this.fullInfoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fullInfoToolStripMenuItem.Text = "Full Info";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -700,6 +709,7 @@ namespace Kontrol_2_Server
 		private System.Windows.Forms.ToolStripMenuItem compileCScriptToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem reloadToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem builderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fullInfoToolStripMenuItem;
     }
 }
 

