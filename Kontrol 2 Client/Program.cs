@@ -478,7 +478,6 @@ namespace Kontrol_2_Client
 								// Keyboard Key press
 								case 0xA1:
 									string key = KeyToStr(recBuf[3]);
-									Console.WriteLine($"Key sent: {key}");
 									try { SendKeys.SendWait((key.Contains("{")) ? key.ToUpper() : key); }
 									catch { }
 									break;
@@ -1758,6 +1757,7 @@ namespace Kontrol_2_Client
 			else if (key == 145) keyStr = "{ScrollLock}";
 			else if (key == 160) keyStr = "(+)";
 			else if (key == 161) keyStr = "(+)";
+			else if (key == 61) keyStr = "(+)";
 			else if (key == 162) keyStr = "(^)";
 			else if (key == 163) keyStr = "(^)";
 			else if (key == 164) keyStr = "(%)";

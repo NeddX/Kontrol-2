@@ -250,15 +250,16 @@ namespace Kontrol_2_Server
 		{
             if (keyboardCheck.Checked && startButton.Text == "Stop")
             {
+                //Console.WriteLine($"key press: {e.KeyCode}");
                 MainForm.Send(new byte[] { 0xFE, 0xF1, 0xA1, (byte) e.KeyCode }, clientId);
             }
         }
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        /*protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if (keyData == Keys.Space || keyData == Keys.Enter && keyboardCheck.Focused || mouseCheck.Focused) return true;
             return base.ProcessCmdKey(ref msg, keyData);
-        }
+        }*/
 
         void fpsCounter_Tick(object sender, EventArgs e)
 		{
