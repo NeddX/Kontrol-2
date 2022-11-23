@@ -1676,7 +1676,7 @@ namespace Kontrol_2_Client
 			else if (key == 19) keyStr = "{Pause}";
 			else if (key == 20) keyStr = "{CapsLock}";
 			else if (key == 27) keyStr = "{Esc}";
-			else if (key == 32) keyStr = "{Space}";
+			else if (key == 32) keyStr = " ";
 			else if (key == 33) keyStr = "{PgUp}";
 			else if (key == 34) keyStr = "{PgDn}";
 			else if (key == 35) keyStr = "{End}";
