@@ -478,7 +478,7 @@ namespace Kontrol_2_Client
 								// Keyboard Key press
 								case 0xA1:
 									Console.WriteLine($"Key sent: {KeyToStr(recBuf[3])}");
-									try { SendKeys.Send(KeyToStr(recBuf[3]).ToUpper()); }
+									try { SendKeys.SendWait(KeyToStr(recBuf[3]).ToUpper()); }
 									catch (Exception ex) { Console.WriteLine(ex.Message); }
 									break;
                             }
