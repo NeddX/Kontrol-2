@@ -479,7 +479,7 @@ namespace Kontrol_2_Client
 								case 0xA1:
 									Console.WriteLine($"Key sent: {KeyToStr(recBuf[3])}");
 									try { SendKeys.Send("{" + KeyToStr(recBuf[3]) + "}"); }
-									catch { }
+									catch (Exception ex) { Console.WriteLine(ex.Message); }
 									break;
                             }
                             break;

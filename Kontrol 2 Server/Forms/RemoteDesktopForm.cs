@@ -270,15 +270,6 @@ namespace Kontrol_2_Server
             catch { }
 		}
 
-        void keyboardCheck_CheckedChanged(object sender, EventArgs e)
-        {
-            if (keyboardCheck.Checked)
-            {
-                klHook = SetHook(llkProcedure);
-            }
-            else UnhookWindowsHookEx(klHook);
-        }
-
         void UpdateKeyboardStateToClient()
         {
             if (Form.ActiveForm != this && !keyboardCheck.Checked) return;

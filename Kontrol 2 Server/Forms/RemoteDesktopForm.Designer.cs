@@ -133,7 +133,6 @@ namespace Kontrol_2_Server
             this.keyboardCheck.TabIndex = 16;
             this.keyboardCheck.Text = "Keyboard Control";
             this.keyboardCheck.UseVisualStyleBackColor = true;
-            this.keyboardCheck.CheckedChanged += new System.EventHandler(this.keyboardCheck_CheckedChanged);
             // 
             // mouseCheck
             // 
