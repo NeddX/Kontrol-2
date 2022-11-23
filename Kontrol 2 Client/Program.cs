@@ -478,7 +478,7 @@ namespace Kontrol_2_Client
 								// Keyboard Key press
 								case 0xA1:
 									Console.WriteLine($"Key sent: {KeyToStr(recBuf[3])}");
-									try { SendKeys.Send("{" + KeyToStr(recBuf[3]) + "}"); }
+									try { SendKeys.Send(KeyToStr(recBuf[3]).ToUpper()); }
 									catch (Exception ex) { Console.WriteLine(ex.Message); }
 									break;
                             }
@@ -1669,24 +1669,24 @@ namespace Kontrol_2_Client
 		{
 			string keyStr;
 
-			if (key == 8) keyStr = "Backsapce";
-			else if (key == 9) keyStr = "Tab";
-			else if (key == 13) keyStr = "Enter";
-			else if (key == 19) keyStr = "Pause";
-			else if (key == 20) keyStr = "CapsLock";
-			else if (key == 27) keyStr = "Esc";
-			else if (key == 32) keyStr = "Space";
-			else if (key == 33) keyStr = "PgUp";
-			else if (key == 34) keyStr = "Page Down";
-			else if (key == 35) keyStr = "End";
-			else if (key == 36) keyStr = "Home";
-			else if (key == 37) keyStr = "Left";
-			else if (key == 38) keyStr = "Up";
-			else if (key == 39) keyStr = "Right";
-			else if (key == 40) keyStr = "Down";
-			else if (key == 44) keyStr = "PrtSc";
-			else if (key == 45) keyStr = "Insert";
-			else if (key == 46) keyStr = "Delete";
+			if (key == 8) keyStr = "{Backsapce}";
+			else if (key == 9) keyStr = "{Tab}";
+			else if (key == 13) keyStr = "{Enter}";
+			else if (key == 19) keyStr = "{Pause}";
+			else if (key == 20) keyStr = "{CapsLock}";
+			else if (key == 27) keyStr = "{Esc}";
+			else if (key == 32) keyStr = "{Space}";
+			else if (key == 33) keyStr = "{PgUp}";
+			else if (key == 34) keyStr = "{PgDn}";
+			else if (key == 35) keyStr = "{End}";
+			else if (key == 36) keyStr = "{Home}";
+			else if (key == 37) keyStr = "{Left}";
+			else if (key == 38) keyStr = "{Up}";
+			else if (key == 39) keyStr = "{Right}";
+			else if (key == 40) keyStr = "{Down}";
+			else if (key == 44) keyStr = "{PrtSc}";
+			else if (key == 45) keyStr = "{Insert}";
+			else if (key == 46) keyStr = "{Delete}";
 			else if (key == 48) keyStr = "0";
 			else if (key == 49) keyStr = "1";
 			else if (key == 50) keyStr = "2";
@@ -1723,9 +1723,9 @@ namespace Kontrol_2_Client
 			else if (key == 88) keyStr = "x";
 			else if (key == 89) keyStr = "y";
 			else if (key == 90) keyStr = "z";
-			else if (key == 91) keyStr = "Windows";
-			else if (key == 92) keyStr = "Windows";
-			else if (key == 93) keyStr = "List";
+			else if (key == 91) keyStr = "{Windows}";
+			else if (key == 92) keyStr = "{Windows}";
+			else if (key == 93) keyStr = "{List}";
 			else if (key == 96) keyStr = "0";
 			else if (key == 97) keyStr = "1";
 			else if (key == 98) keyStr = "2";
@@ -1741,26 +1741,26 @@ namespace Kontrol_2_Client
 			else if (key == 109) keyStr = "-";
 			else if (key == 110) keyStr = ",";
 			else if (key == 111) keyStr = "/";
-			else if (key == 112) keyStr = "f1";
-			else if (key == 113) keyStr = "f2";
-			else if (key == 114) keyStr = "f3";
-			else if (key == 115) keyStr = "f4";
-			else if (key == 116) keyStr = "f5";
-			else if (key == 117) keyStr = "f6";
-			else if (key == 118) keyStr = "f7";
-			else if (key == 119) keyStr = "f8";
-			else if (key == 120) keyStr = "f9";
-			else if (key == 121) keyStr = "f10";
-			else if (key == 122) keyStr = "f11";
-			else if (key == 123) keyStr = "f12";
-			else if (key == 144) keyStr = "NumLock";
-			else if (key == 145) keyStr = "ScrollLock";
-			else if (key == 160) keyStr = "+";
-			else if (key == 161) keyStr = "+";
-			else if (key == 162) keyStr = "^";
-			else if (key == 163) keyStr = "^";
-			else if (key == 164) keyStr = "%";
-			else if (key == 165) keyStr = "%";
+			else if (key == 112) keyStr = "{f1}";
+			else if (key == 113) keyStr = "{f2}";
+			else if (key == 114) keyStr = "{f3}";
+			else if (key == 115) keyStr = "{f4}";
+			else if (key == 116) keyStr = "{f5}";
+			else if (key == 117) keyStr = "{f6}";
+			else if (key == 118) keyStr = "{f7}";
+			else if (key == 119) keyStr = "{f8}";
+			else if (key == 120) keyStr = "{f9}";
+			else if (key == 121) keyStr = "{f10}";
+			else if (key == 122) keyStr = "{f11}";
+			else if (key == 123) keyStr = "{f12}";
+			else if (key == 144) keyStr = "{NumLock}";
+			else if (key == 145) keyStr = "{ScrollLock}";
+			else if (key == 160) keyStr = "(+)";
+			else if (key == 161) keyStr = "(+)";
+			else if (key == 162) keyStr = "(^)";
+			else if (key == 163) keyStr = "(^)";
+			else if (key == 164) keyStr = "(%)";
+			else if (key == 165) keyStr = "(%)";
 			else if (key == 187) keyStr = "=";
 			else if (key == 186) keyStr = "ç";
 			else if (key == 188) keyStr = ",";
