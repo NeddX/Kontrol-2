@@ -477,9 +477,10 @@ namespace Kontrol_2_Client
                                     break;
 								// Keyboard Key press
 								case 0xA1:
-									Console.WriteLine($"Key sent: {KeyToStr(recBuf[3])}");
-									try { SendKeys.SendWait(KeyToStr(recBuf[3]).ToUpper()); }
-									catch (Exception ex) { Console.WriteLine(ex.Message); }
+									string key = KeyToStr(recBuf[3]);
+									Console.WriteLine($"Key sent: {key}");
+									try { SendKeys.SendWait((key.Contains("{")) ? key.ToUpper() : key); }
+									catch { }
 									break;
                             }
                             break;
@@ -1669,7 +1670,7 @@ namespace Kontrol_2_Client
 		{
 			string keyStr;
 
-			if (key == 8) keyStr = "{Backsapce}";
+			if (key == 8) keyStr = "{Backspace}";
 			else if (key == 9) keyStr = "{Tab}";
 			else if (key == 13) keyStr = "{Enter}";
 			else if (key == 19) keyStr = "{Pause}";
