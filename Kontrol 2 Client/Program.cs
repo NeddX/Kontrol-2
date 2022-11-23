@@ -378,7 +378,7 @@ namespace Kontrol_2_Client
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
+					//MessageBox.Show(ex.Message + "\n" + ex.StackTrace);
 					Reconnect();
 				}
 			}
