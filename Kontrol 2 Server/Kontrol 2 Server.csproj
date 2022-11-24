@@ -24,7 +24,7 @@
     <PackageReference Include="dnlib-new" Version="2.1.0" />
     <PackageReference Include="FCTB" Version="2.16.24" />
     <PackageReference Include="NAudio" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
   <ItemGroup>

