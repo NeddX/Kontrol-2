@@ -265,7 +265,7 @@ namespace Kontrol_2_Server
 							raf.ProcessAudio(audioBytes);
 							break;
 						case 0xF4:
-							string text = Encoding.Unicode.GetString(recBuf.Skip(2).ToArray());
+							string text = Encoding.ASCII.GetString(recBuf.Skip(2).ToArray());
 							rsf.Append(text);
 							Console.WriteLine($"CMD: {text}");
                             break;
@@ -277,7 +277,7 @@ namespace Kontrol_2_Server
 					string resp = null;
 					try
 					{
-						resp = Encoding.Unicode.GetString(recBuf);
+						resp = Encoding.ASCII.GetString(recBuf);
 						resp = Decrypt(resp);
 					}
 					catch { }
@@ -482,7 +482,7 @@ namespace Kontrol_2_Server
 		public static string Encrypt(string text)
 		{
 			/*string key = "D(G+KbPeSg";
-			byte[] clearBytes = Encoding.Unicode.GetBytes(text);
+			byte[] clearBytes = Encoding.ASCII.GetBytes(text);
 			using (Aes encryptor = Aes.Create())
 			{
 				Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
@@ -518,7 +518,7 @@ namespace Kontrol_2_Server
 						cs.Write(cipherBytes, 0, cipherBytes.Length);
 						cs.Close();
 					}
-					text = Encoding.Unicode.GetString(ms.ToArray());
+					text = Encoding.ASCII.GetString(ms.ToArray());
 				}
 			}*/
 			return text;
@@ -545,7 +545,7 @@ namespace Kontrol_2_Server
 		{
 			Socket s = _CSOCKETS[targetClient];
 			string encrypted = Encrypt(cmd);
-			byte[] sentData = Encoding.Unicode.GetBytes(encrypted);
+			byte[] sentData = Encoding.ASCII.GetBytes(encrypted);
 			s.Send(sentData);
 			sentBytes = sentData.Length;
 		}
