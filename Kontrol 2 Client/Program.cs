@@ -39,8 +39,8 @@ namespace Kontrol_2_Client
 	static class Settings
     {
 #if DEBUG
-        public static string s_Ip = "192.168.1.7";
-        public static ushort s_Port = 7878;
+        public static string s_Ip = "193.161.193.99";
+        public static ushort s_Port = 20770;
         public static bool s_SW_MODE = false;
 #else
 		public static string s_Ip = "127.0.0.1";
