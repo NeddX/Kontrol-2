@@ -19,11 +19,6 @@ The program is mostly functional but needs polishing. As of now I don't feel lik
 # Build instruction
 Requires Visual Studio 2019 or higher with DotNet 6 Installed. 
 Just open the solution file and hit build, VS will automatically do the rest for you.
-Make sure to have a `conf.t` configuration file in the client's binary folder.
-The format is as follows:
-```
-127.0.0.1;7878;show
-```
-- `127.0.0.1` is where you type the server's IP.
-- `7878` is the default port the server operates on.
-- `show` shows the console window, `hide` to hide it. 
+You do not need a conf.t file anymore. The settings of the client are stored in the Settings class in ```Program.cs```.
+You can also use the builder but you're goning to need to compile the client as a dummy (basically a stub) and place all the files in K2's binary folder under `Data/SelfContained.k2/`.
+Make sure that you compiled the client as Self Contained! Runtime dependant or single file self contained methods do not work for now.
